@@ -1,67 +1,200 @@
 <!DOCTYPE html>
-
 <html lang="th">
-
 <head>
-
   <meta charset="UTF-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>ทดสอบ AR สินค้า</title>
-
-  <script type="module" 
-
-    src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js">
-
-  </script>
-
+  <title>ดูสินค้าแบบ 3D/AR</title>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <style>
-
-    body { margin: 0; font-family: sans-serif; text-align: center; }
-
-    model-viewer {
-
-      width: 100%;
-
-      height: 90vh;
-
-      background-color: #eee;
-
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
 
+    .header {
+      text-align: center;
+      padding: 20px 15px 10px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      color: #222;
+    }
+
+    .header p {
+      margin: 5px 0 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    model-viewer {
+      width: 100%;
+      max-width: 500px;
+      height: 60vh;
+      background-color: transparent;
+      --poster-color: transparent;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      border: 5px solid #ddd;
+      border-top: 5px solid #4A90E2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Hint แนะนำการหมุน */
+    .hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      margin-top: 10px;
+      animation: fadeInOut 3s ease-in-out infinite;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* ปุ่มควบคุมเพิ่มเติม */
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .controls button {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .controls button:hover {
+      background: #f0f0f0;
+    }
+
+    /* Error message */
+    .error-box {
+      display: none;
+      color: #c0392b;
+      background: #fdecea;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
   </style>
-
 </head>
-
 <body>
 
+  <div class="header">
+    <h1>ชื่อสินค้า (แก้ไขตรงนี้)</h1>
+    <p>คำอธิบายสินค้าสั้นๆ ใส่รายละเอียดที่นี่</p>
+  </div>
 
-  <model-viewer 
+  <div style="position: relative; width: 100%; max-width: 500px;">
+    <model-viewer
+      id="myModel"
+      src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+      ios-src="https://modelviewer.dev/shared-assets/models/Astronaut.usdz"
+      alt="โมเดลสินค้า 3D"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      camera-controls
+      auto-rotate
+      shadow-intensity="1"
+      exposure="1"
+      poster="">
+      <button slot="ar-button" style="
+        background: #4A90E2;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        font-size: 14px;
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: pointer;">
+        📱 ดูในห้องจริง
+      </button>
+    </model-viewer>
+    <div class="loading-spinner" id="spinner"></div>
+  </div>
 
-    src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+  <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า</div>
 
-    ar 
+  <div class="controls">
+    <button id="resetBtn">🔄 รีเซ็ตมุมมอง</button>
+    <button id="rotateBtn">⏸️ หยุดหมุน</button>
+  </div>
 
-    ar-modes="webxr scene-viewer quick-look"
+  <div class="error-box" id="errorBox">
+    ⚠️ ไม่สามารถโหลดโมเดลได้ กรุณาลองใหม่อีกครั้ง
+  </div>
 
-    camera-controls
+  <script>
+    const modelViewer = document.getElementById('myModel');
+    const spinner = document.getElementById('spinner');
+    const errorBox = document.getElementById('errorBox');
+    const resetBtn = document.getElementById('resetBtn');
+    const rotateBtn = document.getElementById('rotateBtn');
 
-    auto-rotate
+    // แสดง spinner ตอนโหลด
+    spinner.style.display = 'block';
 
-    shadow-intensity="1"
+    modelViewer.addEventListener('load', () => {
+      spinner.style.display = 'none';
+    });
 
-    alt="โมเดลทดสอบ AR">
+    modelViewer.addEventListener('error', () => {
+      spinner.style.display = 'none';
+      errorBox.style.display = 'block';
+    });
 
-    <button slot="ar-button" style="background:#ff9800;color:white;border:none;padding:12px 24px;font-size:16px;border-radius:8px;position:absolute;bottom:20px;left:50%;transform:translateX(-50%);">
+    // ปุ่มรีเซ็ตมุมมอง
+    resetBtn.addEventListener('click', () => {
+      modelViewer.cameraOrbit = '0deg 75deg 105%';
+      modelViewer.cameraTarget = 'auto';
+    });
 
-      📱 ดูในห้องจริง (AR)
-
-    </button>
-
-  </model-viewer>
-
+    // ปุ่มหยุด/เล่นหมุนอัตโนมัติ
+    let isRotating = true;
+    rotateBtn.addEventListener('click', () => {
+      isRotating = !isRotating;
+      modelViewer.autoRotate = isRotating;
+      rotateBtn.textContent = isRotating ? '⏸️ หยุดหมุน' : '▶️ หมุนต่อ';
+    });
+  </script>
 
 </body>
-
 </html>
