@@ -4,7 +4,6 @@
 const viewer = document.querySelector('#viewer');
 const toast = document.querySelector('#ar-toast');
 const moveBtn = document.querySelector('#moveBtn');
-const floorBtn = document.querySelector('#floorBtn');
 const rotateBtn = document.querySelector('#rotateBtn');
 const resetBtn = document.querySelector('#resetBtn');
 const spinner = document.querySelector('#spinner');
@@ -25,14 +24,12 @@ if (spinner) spinner.style.display = 'block';
 // ==============================================================
 let cameraStream = null;
 let isMoveMode = false;      // โหมดลากย้ายตำแหน่ง (เปิด=ย้าย, ปิด=หมุน)
-let isFloorMode = false;     // โหมดระดับพื้น (เปิด=ระดับพื้น, ปิด=ระดับโต๊ะ)
 let isRotating = true;       // โหมดหมุนอัตโนมัติ (เปิด=หมุน, ปิด=หยุด)
 let isDragging = false;      // กำลังลากนิ้วอยู่หรือไม่
 let lastPointerX = 0;
 let lastPointerY = 0;
 let currentTranslateX = 0;   // พิกัดการเลื่อนแนวนอน (px)
 let currentTranslateY = 0;   // พิกัดการเลื่อนแนวตั้ง (px)
-let savedPreFloorY = 0;
 
 // ==============================================================
 // 3. ฟังก์ชันการแสดงผลและการแปลงพิกัด (Transform & Hints)
@@ -135,15 +132,6 @@ function stopWebCamera() {
     }
   }
 
-  // ปิดโหมดพื้นหากเปิดค้างไว้
-  if (isFloorMode) {
-    isFloorMode = false;
-    if (floorBtn) {
-      floorBtn.classList.remove('is-active');
-      floorBtn.innerHTML = '🏠 วางบนพื้น';
-    }
-  }
-
   document.body.classList.remove('camera-active');
   updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า');
   showToast('ออกจากโหมดกล้องแล้ว');
@@ -184,35 +172,7 @@ function toggleMoveMode() {
   }
 }
 
-// --- ฟังก์ชันที่ 2: วางบนพื้น / ระดับโต๊ะ (Floor vs Table Height Toggle) ---
-function toggleFloorMode() {
-  isFloorMode = !isFloorMode;
-
-  if (isFloorMode) {
-    // เปิดใช้งาน: แสดงไฮไลท์กรอบสี, เลื่อนระดับลงด้านล่าง (จำลองระดับพื้นห้อง)
-    if (floorBtn) {
-      floorBtn.classList.add('is-active');
-      floorBtn.innerHTML = '🛋️ ระดับโต๊ะ';
-    }
-    // คำนวณระยะเลื่อนลงตามความสูงของหน้าจอ
-    const floorShift = Math.round(window.innerHeight * 0.22);
-    savedPreFloorY = currentTranslateY;
-    currentTranslateY = floorShift;
-    applyViewerTransform(true);
-    showToast('วางสินค้าที่ระดับพื้นห้องแล้ว 🏠');
-  } else {
-    // ปิดใช้งาน: ปลดไฮไลท์กรอบสี, เลื่อนกลับมาระดับโต๊ะ/กึ่งกลาง
-    if (floorBtn) {
-      floorBtn.classList.remove('is-active');
-      floorBtn.innerHTML = '🏠 วางบนพื้น';
-    }
-    currentTranslateY = savedPreFloorY !== 0 ? savedPreFloorY : 0;
-    applyViewerTransform(true);
-    showToast('ปรับสินค้ากลับมาระดับโต๊ะแล้ว 🛋️');
-  }
-}
-
-// --- ฟังก์ชันที่ 3: หมุนสินค้าอัตโนมัติ / หยุดหมุน (Auto-Rotate Toggle) ---
+// --- ฟังก์ชันที่ 2: หมุนสินค้าอัตโนมัติ / หยุดหมุน (Auto-Rotate Toggle) ---
 function toggleRotateMode() {
   isRotating = !isRotating;
   if (viewer) viewer.autoRotate = isRotating;
@@ -248,15 +208,6 @@ function resetAll() {
     if (viewer) {
       viewer.setAttribute('camera-controls', '');
       viewer.style.touchAction = '';
-    }
-  }
-
-  // หากเปิดโหมดพื้นค้างไว้ ให้คืนค่ากลับ
-  if (isFloorMode) {
-    isFloorMode = false;
-    if (floorBtn) {
-      floorBtn.classList.remove('is-active');
-      floorBtn.innerHTML = '🏠 วางบนพื้น';
     }
   }
 
@@ -332,9 +283,8 @@ window.addEventListener('pointercancel', () => {
 if (openCameraBtn) openCameraBtn.addEventListener('click', startWebCamera);
 if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopWebCamera);
 
-// ปุ่มโหมดทั้ง 4
+// ปุ่มโหมดทั้ง 3 (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง)
 if (moveBtn) moveBtn.addEventListener('click', toggleMoveMode);
-if (floorBtn) floorBtn.addEventListener('click', toggleFloorMode);
 if (rotateBtn) rotateBtn.addEventListener('click', toggleRotateMode);
 if (resetBtn) resetBtn.addEventListener('click', resetAll);
 
@@ -350,7 +300,6 @@ if (quickLookBtn && viewer) {
 // ป้องกันอีเวนต์แตะปุ่มแล้วส่งผลกระทบต่อการลาก/หมุนโมเดล (Stop Propagation)
 const allButtons = [
   moveBtn,
-  floorBtn,
   rotateBtn,
   resetBtn,
   openCameraBtn,
