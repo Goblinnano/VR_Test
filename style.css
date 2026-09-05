@@ -137,61 +137,74 @@ model-viewer {
 }
 
 /* ==========================================================
-   4. Action Buttons (ปุ่มเปิดกล้องและโหมด AR)
+   4. Action Buttons (ปุ่มเปิดกล้องและโหมด AR ขนาดเท่ากันเป๊ะ)
    ========================================================== */
 .action-buttons {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 12px;
   margin-top: 15px;
   width: 100%;
+  max-width: 480px;
 }
 
-.ar-btn {
-  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-  color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 13px 32px;
-  font-size: clamp(14px, 3.2vw, 16px);
-  font-weight: 700;
+/* สไตล์ร่วมเพื่อให้ปุ่มทั้งสองมีขนาด ความสูง ทรงมน และฟอนต์เท่ากันเป๊ะ */
+.ar-btn,
+.sub-ar-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 28px;
+  font-size: clamp(12px, 2.8vw, 14px);
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(74, 144, 226, 0.4);
   transition: all 0.25s ease;
   white-space: nowrap;
   letter-spacing: 0.2px;
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+/* ปุ่มที่ 1: เปิดกล้องดูในห้องจริง (สีฟ้า) */
+.ar-btn {
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 14px rgba(74, 144, 226, 0.38);
 }
 
 .ar-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(74, 144, 226, 0.5);
+  box-shadow: 0 6px 18px rgba(74, 144, 226, 0.48);
 }
 
 .ar-btn:active {
   transform: translateY(1px);
 }
 
+/* ปุ่มที่ 2: Quick Look (Apple AR) (สีขาวการ์ดมนเงา ขนาดและสัดส่วนเท่ากัน) */
 .sub-ar-btn {
-  background: rgba(255, 255, 255, 0.6);
-  color: #444;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 20px;
-  padding: 7px 18px;
-  font-size: clamp(11px, 2.5vw, 13px);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  -webkit-tap-highlight-color: transparent;
+  background: white;
+  color: #1d1d1f;
+  border: 1.5px solid #d2d2d7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .sub-ar-btn:hover {
-  background: white;
-  color: #111;
-  border-color: #aaa;
+  background: #f5f5f7;
+  border-color: #86868b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.sub-ar-btn:active {
+  transform: translateY(1px);
 }
 
 /* ==========================================================
@@ -449,13 +462,15 @@ body.camera-active .ar-toast {
   }
 
   .action-buttons {
-    flex-direction: row;
-    justify-content: center;
-    gap: 15px;
+    max-width: 520px;
+    gap: 16px;
   }
 
-  .ar-btn {
-    padding: 14px 34px;
+  .ar-btn,
+  .sub-ar-btn {
+    min-height: 52px;
+    padding: 13px 24px;
+    font-size: 15px;
   }
 
   .control-btn {
@@ -522,19 +537,16 @@ body.camera-active .ar-toast {
   }
 
   .action-buttons {
-    flex-direction: row;
     margin-top: 8px;
     gap: 10px;
+    max-width: 440px;
   }
 
-  .ar-btn {
-    padding: 8px 20px;
-    font-size: 13px;
-  }
-
+  .ar-btn,
   .sub-ar-btn {
-    padding: 6px 14px;
-    font-size: 11px;
+    min-height: 38px;
+    padding: 8px 16px;
+    font-size: 12px;
   }
 
   .hint {
@@ -574,5 +586,19 @@ body.camera-active .ar-toast {
   body.camera-active .control-btn {
     padding: 9px 18px;
     font-size: 13px;
+  }
+}
+
+/* หน้าจอขนาดเล็กมาก (หน้าจอแคบกว่า 360px) */
+@media (max-width: 360px) {
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ar-btn,
+  .sub-ar-btn {
+    width: 100%;
+    max-width: 280px;
   }
 }
