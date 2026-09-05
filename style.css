@@ -171,7 +171,7 @@ model-viewer {
   box-sizing: border-box;
 }
 
-/* ปุ่มที่ 1: เปิดกล้องดูในห้องจริง (สีฟ้า) */
+/* ปุ่มที่ 1: เปิดกล้อง (สีฟ้า) */
 .ar-btn {
   background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
   color: white;
