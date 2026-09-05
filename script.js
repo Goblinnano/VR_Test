@@ -6,6 +6,8 @@ const toast = document.querySelector('#ar-toast');
 const moveBtn = document.querySelector('#moveBtn');
 const rotateBtn = document.querySelector('#rotateBtn');
 const resetBtn = document.querySelector('#resetBtn');
+const captureBtn = document.querySelector('#captureBtn');
+const shutterFlash = document.querySelector('#shutterFlash');
 const spinner = document.querySelector('#spinner');
 const errorBox = document.querySelector('#errorBox');
 const progressBar = document.querySelector('.progress-bar');
@@ -276,17 +278,138 @@ window.addEventListener('pointercancel', () => {
 });
 
 // ==============================================================
-// 7. ผูกอีเวนต์ปุ่มกดและการทำงาน
+// 7. ฟังก์ชันถ่ายรูปสินค้าในห้องจริง (Snapshot & Save / Share Photo)
+// ==============================================================
+async function takeSnapshot() {
+  if (!viewer) return;
+
+  // 1. แสดงเอฟเฟกต์แสงแฟลชชัตเตอร์สีขาว
+  if (shutterFlash) {
+    shutterFlash.classList.remove('is-flashing');
+    void shutterFlash.offsetWidth; // บังคับ reflow ทันที
+    shutterFlash.classList.add('is-flashing');
+  }
+
+  showToast('กำลังประมวลผลรูปถ่าย... 📸');
+
+  try {
+    const isCameraMode = document.body.classList.contains('camera-active');
+    const canvas = document.createElement('canvas');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // ปรับความคมชัดให้พอดีกับแรมมือถือ
+
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    canvas.width = Math.round(screenW * dpr);
+    canvas.height = Math.round(screenH * dpr);
+    const ctx = canvas.getContext('2d');
+
+    // 2. หากอยู่ในโหมดกล้อง ให้ดึงภาพสดจากกล้องวิดีโอมาวาดเป็นพื้นหลัง (object-fit: cover)
+    if (isCameraMode && cameraFeed && cameraFeed.videoWidth) {
+      const vWidth = cameraFeed.videoWidth;
+      const vHeight = cameraFeed.videoHeight;
+      const cWidth = canvas.width;
+      const cHeight = canvas.height;
+
+      const vAspect = vWidth / vHeight;
+      const cAspect = cWidth / cHeight;
+      let sx, sy, sWidth, sHeight;
+
+      if (vAspect > cAspect) {
+        sHeight = vHeight;
+        sWidth = vHeight * cAspect;
+        sx = (vWidth - sWidth) / 2;
+        sy = 0;
+      } else {
+        sWidth = vWidth;
+        sHeight = vWidth / cAspect;
+        sx = 0;
+        sy = (vHeight - sHeight) / 2;
+      }
+
+      ctx.drawImage(cameraFeed, sx, sy, sWidth, sHeight, 0, 0, cWidth, cHeight);
+    } else {
+      // หากอยู่นอกกล้อง ให้วาดพื้นหลังสีการ์เดียนท์สวยงาม
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, '#f5f7fa');
+      grad.addColorStop(1, '#c3cfe2');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 3. ดึงภาพโมเดล 3D แบบพื้นหลังโปร่งใสจาก model-viewer
+    const modelBlob = await viewer.toBlob({ idealAspect: false });
+    if (!modelBlob) {
+      throw new Error('Could not capture model-viewer blob');
+    }
+
+    const modelImg = new Image();
+    await new Promise((resolve, reject) => {
+      modelImg.onload = resolve;
+      modelImg.onerror = reject;
+      modelImg.src = URL.createObjectURL(modelBlob);
+    });
+
+    // 4. วาดโมเดล 3D ลงบนผืนผ้าใบตามตำแหน่งที่ผู้ใช้ลากเลื่อนไว้จริง
+    const offsetX = Math.round(currentTranslateX * dpr);
+    const offsetY = Math.round(currentTranslateY * dpr);
+    ctx.drawImage(modelImg, offsetX, offsetY, canvas.width, canvas.height);
+    URL.revokeObjectURL(modelImg.src);
+
+    // 5. บันทึกรูปภาพลงเครื่อง หรือเปิด Native Share Sheet บนมือถือ
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const now = new Date();
+      const fileName = `ar-photo-${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}-${now.getHours()}${now.getMinutes()}.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      // บน iPhone และ Android: ใช้ Web Share API ให้บันทึกลง Photos หรือแชร์ LINE ได้ทันที
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: 'รูปสินค้าในห้องจริง',
+            text: 'ลองจัดวางเก้าอี้อาร์มแชร์ในห้องจริงด้วยระบบ Web AR',
+            files: [file]
+          });
+          showToast('แชร์รูปถ่ายสำเร็จแล้ว 🎉');
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return; // ผู้ใช้กดยกเลิก
+        }
+      }
+
+      // สำหรับเบราว์เซอร์บน PC หรือกรณีที่ไม่รองรับ Web Share
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      }, 1000);
+
+      showToast('บันทึกรูปถ่ายลงเครื่องเรียบร้อยแล้ว 📸');
+    }, 'image/png', 0.95);
+
+  } catch (err) {
+    console.error('Capture error:', err);
+    showToast('ไม่สามารถบันทึกภาพถ่ายได้ กรุณาลองใหม่อีกครั้ง');
+  }
+}
+
+// ==============================================================
+// 8. ผูกอีเวนต์ปุ่มกดและการทำงาน
 // ==============================================================
 
 // ปุ่มเปิด-ปิดกล้อง
 if (openCameraBtn) openCameraBtn.addEventListener('click', startWebCamera);
 if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopWebCamera);
 
-// ปุ่มโหมดทั้ง 3 (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง)
+// ปุ่มโหมดควบคุม (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง, ถ่ายรูป)
 if (moveBtn) moveBtn.addEventListener('click', toggleMoveMode);
 if (rotateBtn) rotateBtn.addEventListener('click', toggleRotateMode);
 if (resetBtn) resetBtn.addEventListener('click', resetAll);
+if (captureBtn) captureBtn.addEventListener('click', takeSnapshot);
 
 // ปุ่ม Quick Look (Apple AR สำหรับ iOS Safari)
 if (quickLookBtn && viewer) {
@@ -302,6 +425,7 @@ const allButtons = [
   moveBtn,
   rotateBtn,
   resetBtn,
+  captureBtn,
   openCameraBtn,
   closeCameraBtn,
   quickLookBtn
