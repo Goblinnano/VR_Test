@@ -253,6 +253,16 @@ model-viewer {
   transform: translateY(1px);
 }
 
+/* สถานะเปิดใช้งานฟังก์ชัน (Active Highlight รอบกรอบปุ่ม) */
+.control-btn.is-active {
+  background: rgba(74, 144, 226, 0.12) !important;
+  color: #1a73e8 !important;
+  border: 2px solid #1a73e8 !important;
+  box-shadow: 0 0 12px rgba(26, 115, 232, 0.5), inset 0 0 6px rgba(26, 115, 232, 0.2) !important;
+  font-weight: 700;
+  transform: scale(1.02);
+}
+
 .hint {
   display: flex;
   align-items: center;
@@ -439,6 +449,15 @@ body.camera-active .control-btn {
 body.camera-active .control-btn:active {
   background: rgba(30, 41, 59, 0.95);
   border-color: #4a90e2;
+}
+
+/* ไฮไลท์เรืองแสงรอบกรอบปุ่มเมื่อเปิดใช้งานฟังก์ชันในกล้อง AR */
+body.camera-active .control-btn.is-active {
+  background: rgba(14, 116, 244, 0.35) !important;
+  color: #ffffff !important;
+  border: 2px solid #00d2ff !important;
+  box-shadow: 0 0 18px rgba(0, 210, 255, 0.8), 0 0 6px rgba(255, 255, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.35) !important;
+  transform: scale(1.05);
 }
 
 body.camera-active .ar-toast {

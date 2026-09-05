@@ -1,8 +1,12 @@
-// อ้างอิงองค์ประกอบต่างๆ ใน DOM
+// ==============================================================
+// 1. อ้างอิงองค์ประกอบต่างๆ ใน DOM
+// ==============================================================
 const viewer = document.querySelector('#viewer');
 const toast = document.querySelector('#ar-toast');
-const resetBtn = document.querySelector('#resetBtn');
+const moveBtn = document.querySelector('#moveBtn');
+const floorBtn = document.querySelector('#floorBtn');
 const rotateBtn = document.querySelector('#rotateBtn');
+const resetBtn = document.querySelector('#resetBtn');
 const spinner = document.querySelector('#spinner');
 const errorBox = document.querySelector('#errorBox');
 const progressBar = document.querySelector('.progress-bar');
@@ -10,14 +14,61 @@ const openCameraBtn = document.querySelector('#openCameraBtn');
 const closeCameraBtn = document.querySelector('#closeCameraBtn');
 const cameraFeed = document.querySelector('#cameraFeed');
 const quickLookBtn = document.querySelector('#quickLookBtn');
+const cameraHint = document.querySelector('.camera-hint');
+const normalHint = document.querySelector('.hint');
 
-// แสดง spinner ตอนโหลด
+// แสดง spinner ระหว่างรอโหลดโมเดล 3D
 if (spinner) spinner.style.display = 'block';
 
-// ตัวแปรเก็บสตรีมวิดีโอกล้อง
+// ==============================================================
+// 2. ตัวแปรสถานะการทำงาน (State Variables)
+// ==============================================================
 let cameraStream = null;
+let isMoveMode = false;      // โหมดลากย้ายตำแหน่ง (เปิด=ย้าย, ปิด=หมุน)
+let isFloorMode = false;     // โหมดระดับพื้น (เปิด=ระดับพื้น, ปิด=ระดับโต๊ะ)
+let isRotating = true;       // โหมดหมุนอัตโนมัติ (เปิด=หมุน, ปิด=หยุด)
+let isDragging = false;      // กำลังลากนิ้วอยู่หรือไม่
+let lastPointerX = 0;
+let lastPointerY = 0;
+let currentTranslateX = 0;   // พิกัดการเลื่อนแนวนอน (px)
+let currentTranslateY = 0;   // พิกัดการเลื่อนแนวตั้ง (px)
+let savedPreFloorY = 0;
 
-// ฟังก์ชันเปิดกล้องหลังในเว็บ (Web Camera AR สำหรับ iPhone & Android)
+// ==============================================================
+// 3. ฟังก์ชันการแสดงผลและการแปลงพิกัด (Transform & Hints)
+// ==============================================================
+
+// อัปเดตตำแหน่งการแสดงผลของโมเดล 3D แบบฮาร์ดแวร์เร่งความเร็ว (GPU translate3d)
+function applyViewerTransform(animated = false) {
+  if (!viewer) return;
+  if (animated) {
+    viewer.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1)';
+  } else {
+    viewer.style.transition = 'none';
+  }
+  viewer.style.transform = `translate3d(${currentTranslateX}px, ${currentTranslateY}px, 0)`;
+}
+
+// อัปเดตข้อความแนะนำการใช้งานบนหน้าจอ
+function updateHintText(text) {
+  if (cameraHint) cameraHint.textContent = text;
+  if (normalHint) normalHint.textContent = text;
+}
+
+// แสดงข้อความแจ้งเตือน Toast สั้นๆ
+function showToast(msg) {
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.style.display = 'none';
+  }, 2500);
+}
+
+// ==============================================================
+// 4. ฟังก์ชันเปิด-ปิดกล้อง (Web Camera AR Mode)
+// ==============================================================
 async function startWebCamera() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     showToast('เบราว์เซอร์นี้ไม่รองรับการเปิดกล้อง');
@@ -36,10 +87,20 @@ async function startWebCamera() {
     };
 
     cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-    cameraFeed.srcObject = cameraStream;
-    await cameraFeed.play();
+    if (cameraFeed) {
+      cameraFeed.srcObject = cameraStream;
+      await cameraFeed.play();
+    }
 
     document.body.classList.add('camera-active');
+
+    // อัปเดตข้อความแนะนำตามโหมดปัจจุบัน
+    if (isMoveMode) {
+      updateHintText('👆 ลากนิ้วบนหน้าจอ เพื่อเลื่อนตำแหน่งสินค้า');
+    } else {
+      updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า 360°');
+    }
+
     showToast('เข้าสู่โหมดกล้องในห้องจริงแล้ว 🎉');
   } catch (err) {
     console.error('Camera error:', err);
@@ -47,7 +108,6 @@ async function startWebCamera() {
   }
 }
 
-// ฟังก์ชันปิดกล้อง
 function stopWebCamera() {
   if (cameraStream) {
     cameraStream.getTracks().forEach((track) => track.stop());
@@ -56,23 +116,229 @@ function stopWebCamera() {
   if (cameraFeed) {
     cameraFeed.srcObject = null;
   }
+
+  // รีเซ็ตตำแหน่งโมเดลกลับสู่กึ่งกลางเมื่อปิดกล้อง
+  currentTranslateX = 0;
+  currentTranslateY = 0;
+  applyViewerTransform(false);
+
+  // ปิดโหมดย้ายหากเปิดค้างไว้
+  if (isMoveMode) {
+    isMoveMode = false;
+    if (moveBtn) {
+      moveBtn.classList.remove('is-active');
+      moveBtn.innerHTML = '🖐️ ย้ายตำแหน่ง';
+    }
+    if (viewer) {
+      viewer.setAttribute('camera-controls', '');
+      viewer.style.touchAction = '';
+    }
+  }
+
+  // ปิดโหมดพื้นหากเปิดค้างไว้
+  if (isFloorMode) {
+    isFloorMode = false;
+    if (floorBtn) {
+      floorBtn.classList.remove('is-active');
+      floorBtn.innerHTML = '🏠 วางบนพื้น';
+    }
+  }
+
   document.body.classList.remove('camera-active');
+  updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า');
   showToast('ออกจากโหมดกล้องแล้ว');
 }
 
-// ผูกอีเวนต์ปุ่มเปิด-ปิดกล้อง
-if (openCameraBtn) {
-  openCameraBtn.addEventListener('click', startWebCamera);
+// ==============================================================
+// 5. ระบบ 4 ฟังก์ชันควบคุม พร้อมสลับเปิด/ปิด และไฮไลท์กรอบสี
+// ==============================================================
+
+// --- ฟังก์ชันที่ 1: ย้ายตำแหน่งสินค้า (1-Finger Drag Move Toggle) ---
+function toggleMoveMode() {
+  isMoveMode = !isMoveMode;
+
+  if (isMoveMode) {
+    // เปิดใช้งาน: แสดงไฮไลท์กรอบสี, เปลี่ยนข้อความ, ปิด camera-controls เพื่อให้ลากย้ายได้
+    if (moveBtn) {
+      moveBtn.classList.add('is-active');
+      moveBtn.innerHTML = '🖐️ กำลังย้าย';
+    }
+    if (viewer) {
+      viewer.removeAttribute('camera-controls');
+      viewer.style.touchAction = 'none';
+    }
+    updateHintText('👆 ลากนิ้วบนหน้าจอ เพื่อเลื่อนตำแหน่งสินค้า');
+    showToast('โหมดย้ายเปิดแล้ว: ลาก 1 นิ้วเพื่อเลื่อนสินค้า 🖐️');
+  } else {
+    // ปิดใช้งาน: ปลดไฮไลท์กรอบสี, เปลี่ยนข้อความเดิม, เปิด camera-controls ให้หมุนได้
+    if (moveBtn) {
+      moveBtn.classList.remove('is-active');
+      moveBtn.innerHTML = '🖐️ ย้ายตำแหน่ง';
+    }
+    if (viewer) {
+      viewer.setAttribute('camera-controls', '');
+      viewer.style.touchAction = '';
+    }
+    updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า 360°');
+    showToast('ปิดโหมดย้ายแล้ว: ลากนิ้วเพื่อหมุนดู 360° 🔄');
+  }
 }
 
-if (closeCameraBtn) {
-  closeCameraBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    stopWebCamera();
-  });
+// --- ฟังก์ชันที่ 2: วางบนพื้น / ระดับโต๊ะ (Floor vs Table Height Toggle) ---
+function toggleFloorMode() {
+  isFloorMode = !isFloorMode;
+
+  if (isFloorMode) {
+    // เปิดใช้งาน: แสดงไฮไลท์กรอบสี, เลื่อนระดับลงด้านล่าง (จำลองระดับพื้นห้อง)
+    if (floorBtn) {
+      floorBtn.classList.add('is-active');
+      floorBtn.innerHTML = '🛋️ ระดับโต๊ะ';
+    }
+    // คำนวณระยะเลื่อนลงตามความสูงของหน้าจอ
+    const floorShift = Math.round(window.innerHeight * 0.22);
+    savedPreFloorY = currentTranslateY;
+    currentTranslateY = floorShift;
+    applyViewerTransform(true);
+    showToast('วางสินค้าที่ระดับพื้นห้องแล้ว 🏠');
+  } else {
+    // ปิดใช้งาน: ปลดไฮไลท์กรอบสี, เลื่อนกลับมาระดับโต๊ะ/กึ่งกลาง
+    if (floorBtn) {
+      floorBtn.classList.remove('is-active');
+      floorBtn.innerHTML = '🏠 วางบนพื้น';
+    }
+    currentTranslateY = savedPreFloorY !== 0 ? savedPreFloorY : 0;
+    applyViewerTransform(true);
+    showToast('ปรับสินค้ากลับมาระดับโต๊ะแล้ว 🛋️');
+  }
 }
 
-// ปุ่มเปิดโหมด Apple Quick Look (หากต้องการใช้ระบบของ Apple)
+// --- ฟังก์ชันที่ 3: หมุนสินค้าอัตโนมัติ / หยุดหมุน (Auto-Rotate Toggle) ---
+function toggleRotateMode() {
+  isRotating = !isRotating;
+  if (viewer) viewer.autoRotate = isRotating;
+
+  if (rotateBtn) {
+    if (isRotating) {
+      // เปิดใช้งาน: แสดงไฮไลท์กรอบสี
+      rotateBtn.classList.add('is-active');
+      rotateBtn.innerHTML = '▶️ กำลังหมุน';
+      showToast('เปิดการหมุนสินค้าอัตโนมัติ ▶️');
+    } else {
+      // ปิดใช้งาน: ปลดไฮไลท์กรอบสี
+      rotateBtn.classList.remove('is-active');
+      rotateBtn.innerHTML = '⏸️ หมุนสินค้า';
+      showToast('หยุดการหมุนสินค้าแล้ว ⏸️');
+    }
+  }
+}
+
+// --- ฟังก์ชันที่ 4: รีเซ็ตตรงกลาง (Recenter & Reset) ---
+function resetAll() {
+  currentTranslateX = 0;
+  currentTranslateY = 0;
+  applyViewerTransform(true);
+
+  // หากเปิดโหมดย้ายค้างไว้ ให้ปิดและคืนค่าการหมุน
+  if (isMoveMode) {
+    isMoveMode = false;
+    if (moveBtn) {
+      moveBtn.classList.remove('is-active');
+      moveBtn.innerHTML = '🖐️ ย้ายตำแหน่ง';
+    }
+    if (viewer) {
+      viewer.setAttribute('camera-controls', '');
+      viewer.style.touchAction = '';
+    }
+  }
+
+  // หากเปิดโหมดพื้นค้างไว้ ให้คืนค่ากลับ
+  if (isFloorMode) {
+    isFloorMode = false;
+    if (floorBtn) {
+      floorBtn.classList.remove('is-active');
+      floorBtn.innerHTML = '🏠 วางบนพื้น';
+    }
+  }
+
+  // รีเซ็ตมุมมองและทิศทางกล้องของ model-viewer
+  if (viewer) {
+    viewer.cameraOrbit = '0deg 75deg 105%';
+    if (typeof viewer.jumpCameraToGoal === 'function') {
+      viewer.jumpCameraToGoal();
+    }
+  }
+
+  // กะพริบไฮไลท์ปุ่มรีเซ็ตสั้นๆ เพื่อให้การตอบสนองที่ชัดเจน
+  if (resetBtn) {
+    resetBtn.classList.add('is-active');
+    setTimeout(() => {
+      resetBtn.classList.remove('is-active');
+    }, 450);
+  }
+
+  updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า 360°');
+  showToast('รีเซ็ตสินค้ากลับตรงกลางแล้ว 🎯');
+}
+
+// ==============================================================
+// 6. ระบบลากนิ้ว 1 นิ้วเพื่อเลื่อนตำแหน่ง (1-Finger Drag Engine)
+// ==============================================================
+
+// ตรวจจับการแตะเริ่มลาก
+window.addEventListener('pointerdown', (e) => {
+  if (!isMoveMode) return;
+
+  // เมินเฉยต่อการแตะปุ่มควบคุมต่างๆ เพื่อให้กดปุ่มได้ตามปกติ
+  if (e.target.closest('button') || e.target.closest('.camera-btn-group') || e.target.closest('.action-buttons')) {
+    return;
+  }
+
+  isDragging = true;
+  lastPointerX = e.clientX;
+  lastPointerY = e.clientY;
+  applyViewerTransform(false); // ลากแบบ real-time ไม่มี animation ดีเลย์
+}, { passive: true });
+
+// คำนวณระยะเลื่อนขณะลากนิ้ว
+window.addEventListener('pointermove', (e) => {
+  if (!isDragging || !isMoveMode) return;
+
+  const deltaX = e.clientX - lastPointerX;
+  const deltaY = e.clientY - lastPointerY;
+
+  currentTranslateX += deltaX;
+  currentTranslateY += deltaY;
+
+  lastPointerX = e.clientX;
+  lastPointerY = e.clientY;
+
+  applyViewerTransform(false);
+}, { passive: true });
+
+// เมื่อยกนิ้วขึ้นหรือการสัมผัสถูกยกเลิก
+window.addEventListener('pointerup', () => {
+  isDragging = false;
+});
+
+window.addEventListener('pointercancel', () => {
+  isDragging = false;
+});
+
+// ==============================================================
+// 7. ผูกอีเวนต์ปุ่มกดและการทำงาน
+// ==============================================================
+
+// ปุ่มเปิด-ปิดกล้อง
+if (openCameraBtn) openCameraBtn.addEventListener('click', startWebCamera);
+if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopWebCamera);
+
+// ปุ่มโหมดทั้ง 4
+if (moveBtn) moveBtn.addEventListener('click', toggleMoveMode);
+if (floorBtn) floorBtn.addEventListener('click', toggleFloorMode);
+if (rotateBtn) rotateBtn.addEventListener('click', toggleRotateMode);
+if (resetBtn) resetBtn.addEventListener('click', resetAll);
+
+// ปุ่ม Quick Look (Apple AR สำหรับ iOS Safari)
 if (quickLookBtn && viewer) {
   quickLookBtn.addEventListener('click', () => {
     if (typeof viewer.activateAR === 'function') {
@@ -81,26 +347,35 @@ if (quickLookBtn && viewer) {
   });
 }
 
-// ป้องกันการแตะปุ่มแล้วส่งผลกระทบต่อการหมุนโมเดล (Stop Propagation)
-[resetBtn, rotateBtn, closeCameraBtn].forEach((btn) => {
+// ป้องกันอีเวนต์แตะปุ่มแล้วส่งผลกระทบต่อการลาก/หมุนโมเดล (Stop Propagation)
+const allButtons = [
+  moveBtn,
+  floorBtn,
+  rotateBtn,
+  resetBtn,
+  openCameraBtn,
+  closeCameraBtn,
+  quickLookBtn
+];
+
+allButtons.forEach((btn) => {
   if (btn) {
-    ['touchstart', 'touchend', 'click'].forEach((evt) => {
-      btn.addEventListener(evt, (e) => e.stopPropagation());
+    ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend'].forEach((evt) => {
+      btn.addEventListener(evt, (e) => e.stopPropagation(), { passive: true });
     });
   }
 });
 
-// จัดการสถานะการโหลดของโมเดล
+// ==============================================================
+// 8. จัดการสถานะการโหลดโมเดล 3D (Model Lifecycle & Progress)
+// ==============================================================
 if (viewer) {
   // แถบความคืบหน้า (Progress Bar)
   viewer.addEventListener('progress', (event) => {
     const bar = viewer.querySelector('.update-bar');
     const percent = event.detail.totalProgress * 100;
-    if (bar) {
-      bar.style.width = percent + '%';
-    }
+    if (bar) bar.style.width = percent + '%';
 
-    // เมื่อดาวน์โหลดครบ 100% ให้ซ่อนแถบดาวน์โหลด
     if (event.detail.totalProgress === 1) {
       setTimeout(() => {
         if (progressBar) progressBar.classList.add('hide');
@@ -108,18 +383,20 @@ if (viewer) {
     }
   });
 
+  // เมื่อโหลดโมเดลเสร็จสมบูรณ์
   viewer.addEventListener('load', () => {
     if (spinner) spinner.style.display = 'none';
     if (progressBar) progressBar.classList.add('hide');
   });
 
+  // กรณีเกิดข้อผิดพลาดในการโหลดโมเดล
   viewer.addEventListener('error', () => {
     if (spinner) spinner.style.display = 'none';
     if (progressBar) progressBar.classList.add('hide');
     if (errorBox) errorBox.style.display = 'block';
   });
 
-  // สถานะ AR แบบดั้งเดิม (Quick Look / WebXR)
+  // สถานะโหมด AR ดั้งเดิม
   viewer.addEventListener('ar-status', (event) => {
     if (event.detail.status === 'not-presenting') {
       showToast('ออกจากโหมด AR แล้ว');
@@ -128,46 +405,5 @@ if (viewer) {
     } else if (event.detail.status === 'failed') {
       showToast('อุปกรณ์นี้ไม่รองรับ AR 😢');
     }
-  });
-}
-
-// ฟังก์ชันแสดงข้อความแจ้งเตือน Toast
-function showToast(msg) {
-  if (!toast) return;
-  toast.textContent = msg;
-  toast.style.display = 'block';
-  setTimeout(() => {
-    toast.style.display = 'none';
-  }, 2500);
-}
-
-// ฟังก์ชันรีเซ็ตมุมมองกล้อง
-function resetCamera() {
-  if (viewer) {
-    viewer.cameraOrbit = '0deg 75deg 105%';
-    if (typeof viewer.jumpCameraToGoal === 'function') {
-      viewer.jumpCameraToGoal();
-    } else {
-      viewer.cameraTarget = 'auto';
-    }
-  }
-}
-
-// ปุ่มรีเซ็ตมุมมอง
-if (resetBtn) {
-  resetBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    resetCamera();
-  });
-}
-
-// ปุ่มหยุด / หมุนอัตโนมัติต่อ
-let isRotating = true;
-if (rotateBtn && viewer) {
-  rotateBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    isRotating = !isRotating;
-    viewer.autoRotate = isRotating;
-    rotateBtn.textContent = isRotating ? '⏸️ หยุดหมุน' : '▶️ หมุนต่อ';
   });
 }

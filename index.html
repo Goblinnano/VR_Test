@@ -28,6 +28,7 @@
       ar-scale="auto"
       ar-placement="floor"
       camera-controls
+      disable-zoom
       auto-rotate
       auto-rotate-delay="1000"
       shadow-intensity="1"
@@ -64,12 +65,14 @@
 
   <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า</div>
 
-  <!-- แผงฟังก์ชันควบคุม (แสดงทั้งในหน้าเว็บปกติ และบนหน้าจอกล้อง) -->
+  <!-- แผงฟังก์ชันควบคุม (ในกล้องจะย้ายไปอยู่ซ้ายบน เรียงเป็นแถวเดียวลงมา พร้อมไฮไลท์สีเมื่อเปิดใช้งาน) -->
   <div id="cameraControls" class="camera-controls">
-    <div class="camera-hint">👆 ลากนิ้วหมุน / จีบนิ้วย่อขยายโมเดลในห้องจริง</div>
+    <div class="camera-hint">👆 ใช้นิ้วลากเพื่อหมุนดูสินค้า 360°</div>
     <div class="camera-btn-group">
-      <button id="resetBtn" class="control-btn" title="รีเซ็ตมุมมอง">🔄 รีเซ็ตมุมมอง</button>
-      <button id="rotateBtn" class="control-btn" title="หยุด/หมุนต่อ">⏸️ หยุดหมุน</button>
+      <button id="moveBtn" class="control-btn" title="กดเพื่อเปิด/ปิดโหมดย้ายตำแหน่ง">🖐️ ย้ายตำแหน่ง</button>
+      <button id="floorBtn" class="control-btn" title="กดเพื่อวางบนพื้น/ระดับโต๊ะ">🏠 วางบนพื้น</button>
+      <button id="rotateBtn" class="control-btn is-active" title="กดเพื่อเปิด/ปิดการหมุน">▶️ กำลังหมุน</button>
+      <button id="resetBtn" class="control-btn" title="รีเซ็ตกลับตรงกลาง">🎯 รีเซ็ตตรงกลาง</button>
     </div>
     <button id="closeCameraBtn" class="close-camera-btn">✕ ปิดกล้อง</button>
   </div>
