@@ -336,10 +336,12 @@ if (viewer) {
   viewer.addEventListener('load', () => {
     if (spinner) spinner.style.display = 'none';
     if (progressBar) progressBar.classList.add('hide');
+    if (errorBox) errorBox.style.display = 'none';
   });
 
   // กรณีเกิดข้อผิดพลาดในการโหลดโมเดล
-  viewer.addEventListener('error', () => {
+  viewer.addEventListener('error', (event) => {
+    console.error('model-viewer error:', event);
     if (spinner) spinner.style.display = 'none';
     if (progressBar) progressBar.classList.add('hide');
     if (errorBox) errorBox.style.display = 'block';
