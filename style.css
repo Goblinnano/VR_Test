@@ -208,11 +208,10 @@ model-viewer {
 }
 
 /* ==========================================================
-   5. Control Buttons & Camera Controls (หน้าปกติ)
+   5. Control Buttons & Camera Controls (ซ่อนในหน้าปกติ แสดงเฉพาะในกล้อง)
    ========================================================== */
 .camera-controls {
-  margin-top: 12px;
-  width: 100%;
+  display: none !important;
 }
 
 .camera-controls .close-camera-btn,
@@ -364,7 +363,7 @@ body.camera-active .camera-controls {
   height: 100vh;
   z-index: 300;
   pointer-events: none;
-  display: block;
+  display: block !important;
 }
 
 /* ปุ่มปิดกล้อง ด้านบน */
