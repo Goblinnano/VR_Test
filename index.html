@@ -24,7 +24,7 @@
       alt="เก้าอี้อาร์มแชร์โมเดิร์น 3D/AR"
       ar
       ar-modes="webxr scene-viewer quick-look"
-      ar-scale="auto"
+      ar-scale="fixed"
       ar-placement="floor"
       camera-controls
       disable-zoom
@@ -56,9 +56,6 @@
       <button id="openCameraBtn" class="ar-btn">
         📷 เปิดกล้อง
       </button>
-      <button id="quickLookBtn" class="sub-ar-btn" title="เปิดแอป Quick Look ของ Apple">
-        📱 Quick Look (Apple AR)
-      </button>
     </div>
   </div>
 
@@ -71,6 +68,7 @@
       <button id="moveBtn" class="control-btn" title="กดเพื่อเปิด/ปิดโหมดย้ายตำแหน่ง">🖐️ ย้ายตำแหน่ง</button>
       <button id="rotateBtn" class="control-btn is-active" title="กดเพื่อหยุดการหมุน">⏸️ หยุดหมุน</button>
       <button id="resetBtn" class="control-btn" title="รีเซ็ตกลับตรงกลาง">🎯 รีเซ็ตตรงกลาง</button>
+      <button id="scaleBtn" class="control-btn" title="เทียบขนาดจริงบนพื้นห้อง (1:1)">📐 เทียบขนาดจริง</button>
       <button id="captureBtn" class="control-btn" title="ถ่ายรูปสินค้าในห้องจริง">📸 ถ่ายรูป</button>
     </div>
     <button id="closeCameraBtn" class="close-camera-btn">✕ ปิดกล้อง</button>

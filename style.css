@@ -137,31 +137,25 @@ model-viewer {
 }
 
 /* ==========================================================
-   4. Action Buttons (ปุ่มเปิดกล้องและโหมด AR ขนาดเท่ากันเป๊ะ)
+   4. Action Buttons (ปุ่มเปิดกล้อง)
    ========================================================== */
 .action-buttons {
   display: flex;
-  flex-direction: row;
   justify-content: center;
-  align-items: stretch;
-  gap: 12px;
+  align-items: center;
   margin-top: 15px;
   width: 100%;
-  max-width: 480px;
 }
 
-/* สไตล์ร่วมเพื่อให้ปุ่มทั้งสองมีขนาด ความสูง ทรงมน และฟอนต์เท่ากันเป๊ะ */
-.ar-btn,
-.sub-ar-btn {
-  flex: 1;
+.ar-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   min-height: 48px;
-  padding: 12px 14px;
+  padding: 12px 28px;
   border-radius: 28px;
-  font-size: clamp(12px, 2.8vw, 14px);
+  font-size: clamp(13px, 3vw, 15px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -169,14 +163,12 @@ model-viewer {
   letter-spacing: 0.2px;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
-}
-
-/* ปุ่มที่ 1: เปิดกล้อง (สีฟ้า) */
-.ar-btn {
   background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
   color: white;
   border: none;
   box-shadow: 0 4px 14px rgba(74, 144, 226, 0.38);
+  max-width: 260px;
+  width: 100%;
 }
 
 .ar-btn:hover {
@@ -185,25 +177,6 @@ model-viewer {
 }
 
 .ar-btn:active {
-  transform: translateY(1px);
-}
-
-/* ปุ่มที่ 2: Quick Look (Apple AR) (สีขาวการ์ดมนเงา ขนาดและสัดส่วนเท่ากัน) */
-.sub-ar-btn {
-  background: white;
-  color: #1d1d1f;
-  border: 1.5px solid #d2d2d7;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.sub-ar-btn:hover {
-  background: #f5f5f7;
-  border-color: #86868b;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-}
-
-.sub-ar-btn:active {
   transform: translateY(1px);
 }
 

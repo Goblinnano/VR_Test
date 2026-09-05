@@ -14,7 +14,7 @@ const progressBar = document.querySelector('.progress-bar');
 const openCameraBtn = document.querySelector('#openCameraBtn');
 const closeCameraBtn = document.querySelector('#closeCameraBtn');
 const cameraFeed = document.querySelector('#cameraFeed');
-const quickLookBtn = document.querySelector('#quickLookBtn');
+const scaleBtn = document.querySelector('#scaleBtn');
 const cameraHint = document.querySelector('.camera-hint');
 const normalHint = document.querySelector('.hint');
 
@@ -27,6 +27,7 @@ if (spinner) spinner.style.display = 'block';
 let cameraStream = null;
 let isMoveMode = false;      // โหมดลากย้ายตำแหน่ง (เปิด=ย้าย, ปิด=หมุน)
 let isRotating = true;       // โหมดหมุนอัตโนมัติ (เปิด=หมุน, ปิด=หยุด)
+let isScaleMode = false;     // โหมดเทียบขนาดจริง (สเกล 1:1)
 let isDragging = false;      // กำลังลากนิ้วอยู่หรือไม่
 let lastPointerX = 0;
 let lastPointerY = 0;
@@ -134,6 +135,12 @@ function stopWebCamera() {
     }
   }
 
+  // หากเปิดโหมดเทียบขนาดจริงค้างไว้ ให้ปิด
+  if (isScaleMode) {
+    isScaleMode = false;
+    if (scaleBtn) scaleBtn.classList.remove('is-active');
+  }
+
   document.body.classList.remove('camera-active');
   updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า');
   showToast('ออกจากโหมดกล้องแล้ว');
@@ -221,6 +228,12 @@ function resetAll() {
     }
   }
 
+  // หากเปิดโหมดเทียบขนาดจริงค้างไว้ ให้ปิด
+  if (isScaleMode) {
+    isScaleMode = false;
+    if (scaleBtn) scaleBtn.classList.remove('is-active');
+  }
+
   // กะพริบไฮไลท์ปุ่มรีเซ็ตสั้นๆ เพื่อให้การตอบสนองที่ชัดเจน
   if (resetBtn) {
     resetBtn.classList.add('is-active');
@@ -276,6 +289,50 @@ window.addEventListener('pointerup', () => {
 window.addEventListener('pointercancel', () => {
   isDragging = false;
 });
+
+// --- ฟังก์ชัน: เทียบขนาดจริง (True Scale 1:1 AR Mode) ---
+async function toggleTrueScale() {
+  // 1. หากอุปกรณ์และเบราว์เซอร์รองรับ Native AR (เช่น Apple Quick Look หรือ Google Scene Viewer)
+  // จะเปิดระบบตรวจจับพื้นห้องจริง และวางสินค้าด้วยขนาดจริง 1:1 ตามตลับเมตร
+  if (viewer && viewer.canActivateAR) {
+    showToast('กำลังเปิดระบบเทียบขนาดจริง 1:1 บนพื้นห้อง... 📐');
+    const wasCameraActive = document.body.classList.contains('camera-active');
+    if (wasCameraActive) {
+      stopWebCamera();
+    }
+    try {
+      await viewer.activateAR();
+      return;
+    } catch (err) {
+      console.warn('activateAR cancelled or failed:', err);
+      if (wasCameraActive) {
+        startWebCamera();
+      }
+      return;
+    }
+  }
+
+  // 2. สำหรับการใช้งานในโหมดกล้องเว็บ หรือเบราว์เซอร์ทั่วไป
+  // สลับโหมดเทียบขนาดจริง (Toggle พร้อมแสดงไฮไลต์กรอบสี)
+  isScaleMode = !isScaleMode;
+  if (isScaleMode) {
+    if (scaleBtn) scaleBtn.classList.add('is-active');
+    // รีเซ็ตตำแหน่งสินค้ามาตรงกลางระดับสายตามาตรฐาน 1:1
+    currentTranslateX = 0;
+    currentTranslateY = 0;
+    applyViewerTransform(true);
+    if (viewer) {
+      viewer.cameraOrbit = '0deg 75deg 105%';
+      if (typeof viewer.jumpCameraToGoal === 'function') {
+        viewer.jumpCameraToGoal();
+      }
+    }
+    showToast('เปิดโหมดเทียบขนาดจริง 1:1 📐');
+  } else {
+    if (scaleBtn) scaleBtn.classList.remove('is-active');
+    showToast('ปิดโหมดเทียบขนาดจริง');
+  }
+}
 
 // ==============================================================
 // 7. ฟังก์ชันถ่ายรูปสินค้าในห้องจริง (Snapshot & Save / Share Photo)
@@ -405,30 +462,22 @@ async function takeSnapshot() {
 if (openCameraBtn) openCameraBtn.addEventListener('click', startWebCamera);
 if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopWebCamera);
 
-// ปุ่มโหมดควบคุม (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง, ถ่ายรูป)
+// ปุ่มโหมดควบคุม (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง, เทียบขนาดจริง, ถ่ายรูป)
 if (moveBtn) moveBtn.addEventListener('click', toggleMoveMode);
 if (rotateBtn) rotateBtn.addEventListener('click', toggleRotateMode);
 if (resetBtn) resetBtn.addEventListener('click', resetAll);
+if (scaleBtn) scaleBtn.addEventListener('click', toggleTrueScale);
 if (captureBtn) captureBtn.addEventListener('click', takeSnapshot);
-
-// ปุ่ม Quick Look (Apple AR สำหรับ iOS Safari)
-if (quickLookBtn && viewer) {
-  quickLookBtn.addEventListener('click', () => {
-    if (typeof viewer.activateAR === 'function') {
-      viewer.activateAR();
-    }
-  });
-}
 
 // ป้องกันอีเวนต์แตะปุ่มแล้วส่งผลกระทบต่อการลาก/หมุนโมเดล (Stop Propagation)
 const allButtons = [
   moveBtn,
   rotateBtn,
   resetBtn,
+  scaleBtn,
   captureBtn,
   openCameraBtn,
-  closeCameraBtn,
-  quickLookBtn
+  closeCameraBtn
 ];
 
 allButtons.forEach((btn) => {
