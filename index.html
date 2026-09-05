@@ -3,84 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>เก้าอี้อาร์มแชร์โมเดิร์น (Modern Armchair) - ดูสินค้าแบบ 3D/AR ขนาดจริง</title>
-  <!-- Google model-viewer Web Component สำหรับ 3D และ WebXR True AR -->
+  <title>เก้าอี้อาร์มแชร์ Modern Sheen - ดูสินค้าแบบ 3D/AR</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header class="header">
-    <h1 id="productTitle">เก้าอี้อาร์มแชร์โมเดิร์น (Modern Armchair)</h1>
-    <p id="productDesc">เก้าอี้พักผ่อนสไตล์โมเดิร์น ดีไซน์สวยงาม เหมาะสำหรับห้องนั่งเล่นและห้องทำงาน</p>
-  </header>
+  <!-- วิดีโอกล้องหลังสำหรับโหมดกล้องในเว็บ (iOS & Android) -->
+  <video id="cameraFeed" autoplay playsinline muted></video>
 
-  <main class="viewer-container">
-    <!-- 
-      กฎที่ 1: ต้องคงไว้ที่ ar-scale="fixed" ห้ามเปลี่ยนเป็น "auto" 
-      เพื่อให้การเทียบขนาดจริง 1:1 บนพื้นห้องมีความแม่นยำ 100%
-    -->
+  <div class="header">
+    <h1>เก้าอี้อาร์มแชร์โมเดิร์น (Modern Armchair)</h1>
+    <p>เก้าอี้พักผ่อนสไตล์โมเดิร์น ดีไซน์สวยงาม เหมาะสำหรับห้องนั่งเล่นและห้องทำงาน</p>
+  </div>
+
+  <div class="viewer-container">
     <model-viewer
       id="viewer"
       src="https://modelviewer.dev/assets/ShopifyModels/Chair.glb"
-      alt="เก้าอี้อาร์มแชร์โมเดิร์น (Modern Armchair)"
+      alt="เก้าอี้อาร์มแชร์โมเดิร์น 3D/AR"
       ar
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="fixed"
       ar-placement="floor"
       camera-controls
+      disable-zoom
       auto-rotate
       auto-rotate-delay="1000"
-      shadow-intensity="1.2"
+      shadow-intensity="1"
       exposure="1"
       loading="eager"
       reveal="auto">
 
-      <!-- แถบดาวน์โหลดโมเดล (Progress Bar) -->
+      <!-- แถบดาวน์โหลด (Progress Bar) ด้านบนสุด -->
       <div class="progress-bar" slot="progress-bar">
         <div class="update-bar"></div>
       </div>
 
-      <!-- 
-        ปุ่มเปิด AR หลักของ model-viewer (Native AR Button)
-        เมื่อกดบน iPhone จะเปิด Apple Quick Look
-        เมื่อกดบน Android จะเปิด Google Scene Viewer / WebXR
-        วางสินค้าลงบนพื้นห้องจริงด้วยขนาด 1:1 ทันที
-      -->
-      <button slot="ar-button" id="ar-button" class="ar-btn">
-        <span class="ar-btn-icon">🏡</span>
-        <span class="ar-btn-text">วางในห้องจริง (ขนาดจริง 1:1)</span>
-      </button>
-
-      <!-- 
-        กฎที่ 3: ห้ามย้าย element ออกจากการเป็นลูกของ <model-viewer>
-        โดยเฉพาะ #ar-overlay-ui เพราะจะทำให้ DOM Overlay ของ WebXR ใช้ไม่ได้
-      -->
-      <div id="ar-overlay-ui" class="ar-overlay-ui">
-        <div class="dimension-badge">
-          <span class="dim-icon">📐</span>
-          <!-- 
-            กฎที่ 4: แสดงขนาดจริงที่คำนวณจาก viewer.getDimensions()
-            กฎที่ 5: 1 หน่วย = 1 เมตร วัดเปรียบเทียบกับสายวัดจริง
-          -->
-          <span id="dimensionsText">กำลังวัดขนาดโมเดล...</span>
-        </div>
-      </div>
+      <!-- ปุ่ม AR เดิมของ model-viewer ซ่อนไว้ -->
+      <button slot="ar-button" id="nativeArButton" style="display: none;"></button>
 
       <!-- Toast แจ้งเตือนสถานะ -->
       <div id="ar-toast" class="ar-toast"></div>
 
     </model-viewer>
 
-    <!-- Loading spinner ตอนรอโหลดโมเดล 3D -->
+    <!-- Loading spinner ตอนรอโหลดโมเดล -->
     <div class="loading-spinner" id="spinner"></div>
 
-    <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า 360° | กาง 2 นิ้วเพื่อซูมดูรายละเอียด</div>
-
-    <div class="error-box" id="errorBox">
-      ⚠️ ไม่สามารถโหลดโมเดล 3D ได้ กรุณาลองใหม่อีกครั้ง
+    <!-- ปุ่มเปิดกล้อง AR (Web Camera AR สำหรับ iPhone & Android) -->
+    <div class="action-buttons">
+      <button id="openCameraBtn" class="ar-btn">
+        📷 เปิดกล้อง
+      </button>
     </div>
-  </main>
+  </div>
+
+  <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า</div>
+
+  <!-- แผงฟังก์ชันควบคุม (ในกล้องจะย้ายไปอยู่ซ้ายบน เรียงเป็นแถวเดียวลงมา) -->
+  <div id="cameraControls" class="camera-controls">
+    <div class="camera-hint">👆 ใช้นิ้วลากเพื่อหมุนดูสินค้า 360°</div>
+    <div class="camera-btn-group">
+      <button id="moveBtn" class="control-btn" title="กดเพื่อเปิด/ปิดโหมดย้ายตำแหน่ง">🖐️ ย้ายตำแหน่ง</button>
+      <button id="rotateBtn" class="control-btn is-active" title="กดเพื่อหยุดการหมุน">⏸️ หยุดหมุน</button>
+      <button id="resetBtn" class="control-btn" title="รีเซ็ตกลับตรงกลาง">🎯 รีเซ็ตตรงกลาง</button>
+      <button id="captureBtn" class="control-btn" title="ถ่ายรูปสินค้าในห้องจริง">📸 ถ่ายรูป</button>
+    </div>
+    <button id="closeCameraBtn" class="close-camera-btn">✕ ปิดกล้อง</button>
+  </div>
+
+  <!-- แสงแฟลชชัตเตอร์ตอนกดถ่ายรูป -->
+  <div id="shutterFlash" class="shutter-flash"></div>
+
+  <div class="error-box" id="errorBox">
+    ⚠️ ไม่สามารถโหลดโมเดลได้ กรุณาลองใหม่อีกครั้ง
+  </div>
 
   <script src="script.js"></script>
 

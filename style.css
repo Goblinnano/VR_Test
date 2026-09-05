@@ -1,39 +1,41 @@
-﻿/* ==========================================================
-   1. Theme Variables & Global Reset
+/* ==========================================================
+   1. Base Styles & Global Settings
    ========================================================== */
-:root {
-  --theme-color: #4a90e2;
-  --theme-hover: #357abd;
-  --theme-gradient: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
-  --theme-shadow: rgba(74, 144, 226, 0.38);
-  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  --card-bg: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --radius-lg: 24px;
-  --radius-full: 9999px;
-}
-
 * {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
-  padding: 0 0 40px;
+  padding: 0 0 30px;
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Prompt', sans-serif;
-  background: var(--bg-gradient);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  color: var(--text-primary);
-  /* รองรับ Safe Area สำหรับ iPhone และอุปกรณ์ขอบโค้ง */
-  padding-top: max(16px, env(safe-area-inset-top));
+  overflow-x: hidden;
+  /* รองรับ Safe Area สำหรับ iPhone ที่มีรอยบากและขอบโค้ง */
+  padding-top: max(10px, env(safe-area-inset-top));
   padding-bottom: max(30px, env(safe-area-inset-bottom));
-  padding-left: max(12px, env(safe-area-inset-left));
-  padding-right: max(12px, env(safe-area-inset-right));
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* วิดีโอกล้องหลังในโหมด Web Camera */
+#cameraFeed {
+  display: none;
+}
+
+body.camera-active #cameraFeed {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 100;
 }
 
 /* ==========================================================
@@ -41,24 +43,24 @@ body {
    ========================================================== */
 .header {
   text-align: center;
-  padding: 16px 20px 10px;
-  max-width: 640px;
+  padding: 15px 20px 10px;
+  max-width: 600px;
   width: 100%;
 }
 
 .header h1 {
   margin: 0;
-  font-size: clamp(22px, 4.5vw, 28px);
-  color: var(--text-primary);
+  font-size: clamp(20px, 4vw, 28px);
+  color: #1a1a1a;
   font-weight: 700;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
 }
 
 .header p {
-  margin: 8px 0 0;
-  font-size: clamp(13px, 2.8vw, 15px);
-  color: var(--text-secondary);
-  line-height: 1.5;
+  margin: 6px 0 0;
+  font-size: clamp(13px, 2.5vw, 15px);
+  color: #555;
+  line-height: 1.4;
 }
 
 /* ==========================================================
@@ -67,186 +69,217 @@ body {
 .viewer-container {
   position: relative;
   width: 92%;
-  max-width: 580px;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 10px;
+  margin: 0 auto;
 }
 
 model-viewer {
   width: 100%;
-  height: clamp(380px, 58vh, 520px);
-  background: radial-gradient(circle at center, #ffffff 0%, #edf2f7 100%);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-  position: relative;
-  outline: none;
+  height: clamp(340px, 52vh, 600px);
+  background-color: transparent;
   --poster-color: transparent;
+  position: relative;
+  border-radius: 18px;
+  outline: none;
+  touch-action: pan-y;
 }
 
-/* ==========================================================
-   4. WebXR DOM Overlay UI (กฎที่ 3: ต้องเป็นลูกของ model-viewer)
-   ========================================================== */
-.ar-overlay-ui {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 100;
-  pointer-events: none;
-}
-
-.dimension-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(15, 23, 42, 0.82);
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: clamp(11px, 2.8vw, 13px);
-  font-weight: 600;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-  white-space: nowrap;
-}
-
-.dim-icon {
-  font-size: 15px;
-}
-
-/* ==========================================================
-   5. Native AR Button (slot="ar-button")
-   ========================================================== */
-.ar-btn {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--theme-gradient);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-full);
-  padding: 13px 26px;
-  font-size: clamp(13px, 3.2vw, 15px);
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 0 6px 20px var(--theme-shadow);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  z-index: 10;
-  letter-spacing: 0.2px;
-}
-
-.ar-btn:hover {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 8px 24px var(--theme-shadow);
-}
-
-.ar-btn:active {
-  transform: translateX(-50%) scale(0.96);
-}
-
-.ar-btn-icon {
-  font-size: 18px;
-}
-
-/* ==========================================================
-   6. Progress Bar & Loading Elements
-   ========================================================== */
-.progress-bar {
-  display: block;
-  width: 100%;
-  height: 4px;
-  max-height: 4px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background: rgba(0, 0, 0, 0.06);
-  z-index: 20;
-}
-
-.progress-bar.hide {
-  display: none;
-}
-
-.update-bar {
-  background: var(--theme-gradient);
-  width: 0%;
-  height: 100%;
-  border-radius: 0 2px 2px 0;
-  transition: width 0.25s ease;
-}
-
+/* Loading spinner */
 .loading-spinner {
   display: none;
   position: absolute;
-  top: 45%;
+  top: 42%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 44px;
-  height: 44px;
-  border: 4px solid rgba(74, 144, 226, 0.18);
-  border-top-color: var(--theme-color);
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #4a90e2;
   border-radius: 50%;
-  animation: spin 0.9s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
-  z-index: 15;
+  animation: spin 0.9s linear infinite;
   pointer-events: none;
 }
 
 @keyframes spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* แถบดาวน์โหลด (Progress Bar) */
+.progress-bar {
+  display: block;
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: opacity 0.4s ease;
+  z-index: 10;
+}
+
+.progress-bar.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.update-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  background: #4a90e2;
+  transition: width 0.2s ease;
 }
 
 /* ==========================================================
-   7. Hints, Errors & Toast
+   4. Action Buttons (ปุ่มเปิดกล้อง)
    ========================================================== */
-.hint {
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.ar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(200, 210, 225, 0.6);
-  padding: 7px 18px;
+  min-height: 48px;
+  padding: 12px 28px;
+  border-radius: 28px;
+  font-size: clamp(13px, 3vw, 15px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 14px rgba(74, 144, 226, 0.38);
+  max-width: 260px;
+  width: 100%;
+}
+
+.ar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(74, 144, 226, 0.48);
+}
+
+.ar-btn:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================
+   5. Control Buttons & Camera Controls (ซ่อนในหน้าปกติ แสดงเฉพาะในกล้อง)
+   ========================================================== */
+.camera-controls {
+  display: none !important;
+}
+
+.camera-controls .close-camera-btn,
+.camera-controls .camera-hint {
+  display: none;
+}
+
+.camera-btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  background: white;
+  color: #2c3e50;
+  border: 1px solid #dcdfe6;
+  border-radius: 24px;
+  padding: 10px 18px;
+  font-size: clamp(12px, 2.8vw, 14px);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.control-btn:hover {
+  background: #f8fafc;
+  border-color: #b0c4de;
+  transform: translateY(-1px);
+}
+
+.control-btn:active {
+  transform: translateY(1px);
+}
+
+/* สถานะเปิดใช้งานฟังก์ชัน (Active Highlight รอบกรอบปุ่ม) */
+.control-btn.is-active {
+  background: rgba(74, 144, 226, 0.12) !important;
+  color: #1a73e8 !important;
+  border: 2px solid #1a73e8 !important;
+  box-shadow: 0 0 12px rgba(26, 115, 232, 0.5), inset 0 0 6px rgba(26, 115, 232, 0.2) !important;
+  font-weight: 700;
+  transform: scale(1.02);
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  padding: 6px 16px;
   border-radius: 20px;
-  font-size: clamp(11px, 2.5vw, 13px);
-  margin-top: 14px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-size: clamp(11px, 2.4vw, 13px);
+  margin-top: 15px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeInOut 3s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
 }
 
 .error-box {
   display: none;
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  color: #c0392b;
+  background: #fdecea;
   padding: 10px 18px;
-  border-radius: 12px;
-  margin-top: 14px;
+  border-radius: 10px;
+  margin-top: 15px;
   font-size: 13px;
-  text-align: center;
+  border: 1px solid rgba(192, 57, 43, 0.2);
 }
 
+/* Toast แจ้งเตือน */
 .ar-toast {
-  position: absolute;
-  bottom: 80px;
+  position: fixed;
+  bottom: max(30px, env(safe-area-inset-bottom) + 20px);
   left: 50%;
   transform: translateX(-50%);
   background: rgba(15, 23, 42, 0.88);
-  color: #ffffff;
-  padding: 10px 20px;
+  color: white;
+  padding: 11px 24px;
   border-radius: 30px;
-  font-size: clamp(12px, 2.8vw, 13px);
+  font-size: clamp(13px, 3vw, 14px);
   font-weight: 500;
   display: none;
-  z-index: 200;
+  z-index: 10000;
   white-space: nowrap;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
   pointer-events: none;
@@ -254,23 +287,337 @@ model-viewer {
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* ==========================================================
-   8. Responsive Media Queries
-   ========================================================== */
-@media (min-width: 640px) {
+/* ==============================================================
+   6. Web Camera AR Mode (โหมดกล้องในห้องจริง - รองรับทุกอุปกรณ์)
+   ============================================================== */
+body.camera-active {
+  overflow: hidden;
+  background: black;
+}
+
+body.camera-active .header,
+body.camera-active .hint,
+body.camera-active .error-box,
+body.camera-active .action-buttons {
+  display: none !important;
+}
+
+body.camera-active .viewer-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+body.camera-active model-viewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  border-radius: 0;
+  z-index: 200;
+  pointer-events: auto; /* รับการสัมผัสหมุน/ย่อขยายโมเดล */
+  background-color: transparent !important;
+}
+
+body.camera-active .camera-controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 300;
+  pointer-events: none;
+  display: block !important;
+}
+
+/* ปุ่มปิดกล้อง ด้านบน */
+body.camera-active .close-camera-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top) + 8px);
+  right: max(18px, env(safe-area-inset-right) + 8px);
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.65);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 25px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.camera-active .close-camera-btn:active {
+  background: rgba(220, 38, 38, 0.85);
+  border-color: transparent;
+}
+
+/* ข้อความแนะนำบนหน้าจอกล้อง ด้านล่างตรงกลาง */
+body.camera-active .camera-hint {
+  display: block !important;
+  position: absolute;
+  bottom: max(30px, env(safe-area-inset-bottom) + 15px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  padding: 7px 18px;
+  border-radius: 20px;
+  font-size: clamp(11px, 2.5vw, 13px);
+  white-space: nowrap;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* แถบปุ่มฟังก์ชัน ด้านซ้ายบนบนหน้าจอกล้อง เรียงเป็นแถวเดียวลงมา */
+body.camera-active .camera-btn-group {
+  position: absolute;
+  top: max(65px, env(safe-area-inset-top) + 30px);
+  left: max(16px, env(safe-area-inset-left) + 8px);
+  right: auto;
+  bottom: auto;
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  pointer-events: auto;
+  z-index: 310;
+  width: auto;
+}
+
+body.camera-active .control-btn {
+  background: rgba(15, 23, 42, 0.75);
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 25px;
+  padding: 10px 18px;
+  font-size: clamp(12px, 2.8vw, 14px);
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+body.camera-active .control-btn:active {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #4a90e2;
+}
+
+/* ไฮไลท์เรืองแสงรอบกรอบปุ่มเมื่อเปิดใช้งานฟังก์ชันในกล้อง AR */
+body.camera-active .control-btn.is-active {
+  background: rgba(14, 116, 244, 0.35) !important;
+  color: #ffffff !important;
+  border: 2px solid #00d2ff !important;
+  box-shadow: 0 0 18px rgba(0, 210, 255, 0.8), 0 0 6px rgba(255, 255, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.35) !important;
+  transform: scale(1.05);
+}
+
+body.camera-active .ar-toast {
+  bottom: max(100px, env(safe-area-inset-bottom) + 85px);
+}
+
+/* แสงแฟลชชัตเตอร์กล้องถ่ายรูป */
+.shutter-flash {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.shutter-flash.is-flashing {
+  display: block;
+  animation: flashAnim 0.35s ease-out forwards;
+}
+
+@keyframes flashAnim {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* ==============================================================
+   7. Media Queries สำหรับแท็บเล็ต, ไอแพด, และจอใหญ่ (Responsive)
+   ============================================================== */
+
+/* แท็บเล็ต & iPad (หน้าจอความกว้าง 600px - 1024px) */
+@media (min-width: 600px) {
   .viewer-container {
     max-width: 640px;
   }
+
   model-viewer {
-    height: 520px;
+    height: 58vh;
+    min-height: 420px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .action-buttons {
+    max-width: 520px;
+    gap: 16px;
+  }
+
+  .ar-btn,
+  .sub-ar-btn {
+    min-height: 52px;
+    padding: 13px 24px;
+    font-size: 15px;
+  }
+
+  .control-btn {
+    padding: 11px 22px;
+    font-size: 14px;
   }
 }
 
-@media (min-width: 1024px) {
-  .viewer-container {
-    max-width: 720px;
+/* คอมพิวเตอร์ & หน้าจอขนาดใหญ่ (Desktop / Laptop 1025px ขึ้นไป) */
+@media (min-width: 1025px) {
+  body {
+    padding-top: 30px;
   }
+
+  .viewer-container {
+    max-width: 760px;
+  }
+
   model-viewer {
-    height: 580px;
+    height: 60vh;
+    min-height: 500px;
+    max-height: 700px;
+    border-radius: 28px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  .header h1 {
+    font-size: 32px;
+  }
+
+  .header p {
+    font-size: 16px;
+  }
+}
+
+/* โหมดแนวนอนบนมือถือ (Mobile Landscape - จอเตี้ยกว่า 520px) */
+@media (max-height: 520px) and (orientation: landscape) {
+  body {
+    padding: 5px 15px;
+  }
+
+  .header {
+    padding: 5px 10px;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    display: inline-block;
+  }
+
+  .header p {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 12px;
+  }
+
+  .viewer-container {
+    max-width: 480px;
+  }
+
+  model-viewer {
+    height: 55vh;
+    min-height: 220px;
+  }
+
+  .action-buttons {
+    margin-top: 8px;
+    gap: 10px;
+    max-width: 440px;
+  }
+
+  .ar-btn,
+  .sub-ar-btn {
+    min-height: 38px;
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .hint {
+    margin-top: 8px;
+    padding: 4px 12px;
+    font-size: 11px;
+  }
+
+  .camera-controls {
+    margin-top: 6px;
+  }
+
+  .control-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  /* ในโหมดกล้องแนวนอน */
+  body.camera-active .camera-hint {
+    bottom: max(14px, env(safe-area-inset-bottom));
+    top: auto;
+    font-size: 11px;
+    padding: 4px 12px;
+  }
+
+  body.camera-active .close-camera-btn {
+    top: max(10px, env(safe-area-inset-top));
+    right: max(15px, env(safe-area-inset-right));
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  body.camera-active .camera-btn-group {
+    top: max(16px, env(safe-area-inset-top) + 6px);
+    left: max(14px, env(safe-area-inset-left));
+    bottom: auto;
+    gap: 8px;
+  }
+
+  body.camera-active .control-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* หน้าจอขนาดเล็กมาก (หน้าจอแคบกว่า 360px) */
+@media (max-width: 360px) {
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ar-btn,
+  .sub-ar-btn {
+    width: 100%;
+    max-width: 280px;
   }
 }
