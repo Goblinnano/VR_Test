@@ -27,7 +27,7 @@ if (spinner) spinner.style.display = 'block';
 let cameraStream = null;
 let isMoveMode = false;      // โหมดลากย้ายตำแหน่ง (เปิด=ย้าย, ปิด=หมุน)
 let isRotating = true;       // โหมดหมุนอัตโนมัติ (เปิด=หมุน, ปิด=หยุด)
-let isScaleMode = false;     // โหมดเทียบขนาดจริง (สเกล 1:1)
+let isScaleMode = true;      // โหมดเทียบขนาดจริง (สเกล 1:1) - เปิดใช้งานเป็นค่าเริ่มต้น
 let isDragging = false;      // กำลังลากนิ้วอยู่หรือไม่
 let lastPointerX = 0;
 let lastPointerY = 0;
@@ -94,6 +94,19 @@ async function startWebCamera() {
 
     document.body.classList.add('camera-active');
 
+    // เปิดโหมดเทียบขนาดจริง 1:1 เป็นค่าเริ่มต้นทันทีที่เปิดกล้อง
+    isScaleMode = true;
+    if (scaleBtn) scaleBtn.classList.add('is-active');
+    currentTranslateX = 0;
+    currentTranslateY = 0;
+    applyViewerTransform(false);
+    if (viewer) {
+      viewer.cameraOrbit = '0deg 75deg 105%';
+      if (typeof viewer.jumpCameraToGoal === 'function') {
+        viewer.jumpCameraToGoal();
+      }
+    }
+
     // อัปเดตข้อความแนะนำตามโหมดปัจจุบัน
     if (isMoveMode) {
       updateHintText('👆 ลากนิ้วบนหน้าจอ เพื่อเลื่อนตำแหน่งสินค้า');
@@ -101,7 +114,7 @@ async function startWebCamera() {
       updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า 360°');
     }
 
-    showToast('เข้าสู่โหมดกล้องในห้องจริงแล้ว 🎉');
+    showToast('เปิดกล้องพร้อมเทียบขนาดจริง 1:1 เรียบร้อย 📐');
   } catch (err) {
     console.error('Camera error:', err);
     showToast('ไม่สามารถเปิดกล้องได้: กรุณากดอนุญาตให้เข้าถึงกล้อง');
@@ -135,11 +148,9 @@ function stopWebCamera() {
     }
   }
 
-  // หากเปิดโหมดเทียบขนาดจริงค้างไว้ ให้ปิด
-  if (isScaleMode) {
-    isScaleMode = false;
-    if (scaleBtn) scaleBtn.classList.remove('is-active');
-  }
+  // คงสถานะโหมดเทียบขนาดจริง 1:1 พร้อมไฮไลท์กรอบสีไว้สำหรับการเปิดครั้งถัดไป
+  isScaleMode = true;
+  if (scaleBtn) scaleBtn.classList.add('is-active');
 
   document.body.classList.remove('camera-active');
   updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า');
@@ -228,11 +239,9 @@ function resetAll() {
     }
   }
 
-  // หากเปิดโหมดเทียบขนาดจริงค้างไว้ ให้ปิด
-  if (isScaleMode) {
-    isScaleMode = false;
-    if (scaleBtn) scaleBtn.classList.remove('is-active');
-  }
+  // คืนค่าตำแหน่งและคงสถานะโหมดเทียบขนาดจริง 1:1 ไว้
+  isScaleMode = true;
+  if (scaleBtn) scaleBtn.classList.add('is-active');
 
   // กะพริบไฮไลท์ปุ่มรีเซ็ตสั้นๆ เพื่อให้การตอบสนองที่ชัดเจน
   if (resetBtn) {
