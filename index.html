@@ -2,199 +2,83 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>ดูสินค้าแบบ 3D/AR</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .header {
-      text-align: center;
-      padding: 20px 15px 10px;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 22px;
-      color: #222;
-    }
-
-    .header p {
-      margin: 5px 0 0;
-      font-size: 14px;
-      color: #666;
-    }
-
-    model-viewer {
-      width: 100%;
-      max-width: 500px;
-      height: 60vh;
-      background-color: transparent;
-      --poster-color: transparent;
-    }
-
-    /* Loading spinner */
-    .loading-spinner {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 50px;
-      height: 50px;
-      border: 5px solid #ddd;
-      border-top: 5px solid #4A90E2;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    /* Hint แนะนำการหมุน */
-    .hint {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      margin-top: 10px;
-      animation: fadeInOut 3s ease-in-out infinite;
-    }
-
-    @keyframes fadeInOut {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
-    }
-
-    /* ปุ่มควบคุมเพิ่มเติม */
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .controls button {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .controls button:hover {
-      background: #f0f0f0;
-    }
-
-    /* Error message */
-    .error-box {
-      display: none;
-      color: #c0392b;
-      background: #fdecea;
-      padding: 10px 15px;
-      border-radius: 8px;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- วิดีโอกล้องหลังสำหรับโหมดกล้องในเว็บ (iOS & Android) -->
+  <video id="cameraFeed" autoplay playsinline muted></video>
 
   <div class="header">
     <h1>ชื่อสินค้า (แก้ไขตรงนี้)</h1>
     <p>คำอธิบายสินค้าสั้นๆ ใส่รายละเอียดที่นี่</p>
   </div>
 
-  <div style="position: relative; width: 100%; max-width: 500px;">
+  <div class="viewer-container">
     <model-viewer
-      id="myModel"
+      id="viewer"
       src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
       ios-src="https://modelviewer.dev/shared-assets/models/Astronaut.usdz"
-      alt="โมเดลสินค้า 3D"
+      alt="ดูสินค้าแบบ 3D"
       ar
       ar-modes="webxr scene-viewer quick-look"
+      ar-scale="auto"
+      ar-placement="floor"
       camera-controls
       auto-rotate
+      auto-rotate-delay="1000"
       shadow-intensity="1"
       exposure="1"
-      poster="">
-      <button slot="ar-button" style="
-        background: #4A90E2;
-        color: white;
-        border: none;
-        border-radius: 20px;
-        padding: 10px 20px;
-        font-size: 14px;
-        position: absolute;
-        bottom: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-        cursor: pointer;">
-        📱 ดูในห้องจริง
-      </button>
+      loading="eager"
+      reveal="auto">
+
+      <!-- แถบดาวน์โหลด (Progress Bar) ด้านบนสุด -->
+      <div class="progress-bar" slot="progress-bar">
+        <div class="update-bar"></div>
+      </div>
+
+      <!-- ปุ่ม AR เดิมของ model-viewer ซ่อนไว้ -->
+      <button slot="ar-button" id="nativeArButton" style="display: none;"></button>
+
+      <!-- Toast แจ้งเตือนสถานะ -->
+      <div id="ar-toast" class="ar-toast"></div>
+
     </model-viewer>
+
+    <!-- Loading spinner ตอนรอโหลดโมเดล -->
     <div class="loading-spinner" id="spinner"></div>
+
+    <!-- ปุ่มเปิดกล้อง AR (Web Camera AR สำหรับ iPhone & Android) -->
+    <div class="action-buttons">
+      <button id="openCameraBtn" class="ar-btn">
+        📷 เปิดกล้องดูในห้องจริง
+      </button>
+      <button id="quickLookBtn" class="sub-ar-btn" title="เปิดแอป Quick Look ของ Apple">
+        📱 โหมด Quick Look (Apple AR)
+      </button>
+    </div>
   </div>
 
   <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า</div>
 
-  <div class="controls">
-    <button id="resetBtn">🔄 รีเซ็ตมุมมอง</button>
-    <button id="rotateBtn">⏸️ หยุดหมุน</button>
+  <!-- แผงฟังก์ชันควบคุม (แสดงทั้งในหน้าเว็บปกติ และบนหน้าจอกล้อง) -->
+  <div id="cameraControls" class="camera-controls">
+    <div class="camera-hint">👆 ลากนิ้วหมุน / จีบนิ้วย่อขยายโมเดลในห้องจริง</div>
+    <div class="camera-btn-group">
+      <button id="resetBtn" class="control-btn" title="รีเซ็ตมุมมอง">🔄 รีเซ็ตมุมมอง</button>
+      <button id="rotateBtn" class="control-btn" title="หยุด/หมุนต่อ">⏸️ หยุดหมุน</button>
+    </div>
+    <button id="closeCameraBtn" class="close-camera-btn">✕ ปิดกล้อง</button>
   </div>
 
   <div class="error-box" id="errorBox">
     ⚠️ ไม่สามารถโหลดโมเดลได้ กรุณาลองใหม่อีกครั้ง
   </div>
 
-  <script>
-    const modelViewer = document.getElementById('myModel');
-    const spinner = document.getElementById('spinner');
-    const errorBox = document.getElementById('errorBox');
-    const resetBtn = document.getElementById('resetBtn');
-    const rotateBtn = document.getElementById('rotateBtn');
-
-    // แสดง spinner ตอนโหลด
-    spinner.style.display = 'block';
-
-    modelViewer.addEventListener('load', () => {
-      spinner.style.display = 'none';
-    });
-
-    modelViewer.addEventListener('error', () => {
-      spinner.style.display = 'none';
-      errorBox.style.display = 'block';
-    });
-
-    // ปุ่มรีเซ็ตมุมมอง
-    resetBtn.addEventListener('click', () => {
-      modelViewer.cameraOrbit = '0deg 75deg 105%';
-      modelViewer.cameraTarget = 'auto';
-    });
-
-    // ปุ่มหยุด/เล่นหมุนอัตโนมัติ
-    let isRotating = true;
-    rotateBtn.addEventListener('click', () => {
-      isRotating = !isRotating;
-      modelViewer.autoRotate = isRotating;
-      rotateBtn.textContent = isRotating ? '⏸️ หยุดหมุน' : '▶️ หมุนต่อ';
-    });
-  </script>
+  <script src="script.js"></script>
 
 </body>
 </html>
