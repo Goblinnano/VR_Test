@@ -407,7 +407,7 @@ body.camera-active .camera-hint {
 /* แถบปุ่มฟังก์ชัน ด้านซ้ายบนบนหน้าจอกล้อง เรียงเป็นแถวเดียวลงมา */
 body.camera-active .camera-btn-group {
   position: absolute;
-  top: max(20px, env(safe-area-inset-top) + 8px);
+  top: max(65px, env(safe-area-inset-top) + 30px);
   left: max(16px, env(safe-area-inset-left) + 8px);
   right: auto;
   bottom: auto;
@@ -582,7 +582,7 @@ body.camera-active .ar-toast {
   }
 
   body.camera-active .camera-btn-group {
-    top: max(10px, env(safe-area-inset-top));
+    top: max(16px, env(safe-area-inset-top) + 6px);
     left: max(14px, env(safe-area-inset-left));
     bottom: auto;
     gap: 8px;
