@@ -219,14 +219,14 @@ function toggleRotateMode() {
 
   if (rotateBtn) {
     if (isRotating) {
-      // เปิดใช้งาน: แสดงไฮไลท์กรอบสี
+      // กำลังหมุนอยู่: แสดงไฮไลท์กรอบสี และปุ่มสำหรับกดหยุดหมุน
       rotateBtn.classList.add('is-active');
-      rotateBtn.innerHTML = '▶️ กำลังหมุน';
+      rotateBtn.innerHTML = '⏸️ หยุดหมุน';
       showToast('เปิดการหมุนสินค้าอัตโนมัติ ▶️');
     } else {
-      // ปิดใช้งาน: ปลดไฮไลท์กรอบสี
+      // หยุดหมุนแล้ว: ปลดไฮไลท์กรอบสี และปุ่มสำหรับกดเริ่มหมุนสินค้า
       rotateBtn.classList.remove('is-active');
-      rotateBtn.innerHTML = '⏸️ หมุนสินค้า';
+      rotateBtn.innerHTML = '▶️ หมุนสินค้า';
       showToast('หยุดการหมุนสินค้าแล้ว ⏸️');
     }
   }
