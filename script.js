@@ -411,23 +411,8 @@ async function takeSnapshot() {
 // 8. ผูกอีเวนต์ปุ่มกดและการทำงาน
 // ==============================================================
 
-// ปุ่มเปิด-ปิดกล้อง
-// ปุ่มเปิดกล้อง: บนมือถือ (iPhone/Android) เข้าสู่โหมด True AR วางบนพื้นห้องจริงด้วยขนาด 1:1 ทันที!
-// หากอุปกรณ์ไม่รองรับ (เช่น PC) จะเปิด Web Camera ให้อัตโนมัติ
-function handleOpenCamera() {
-  if (viewer && viewer.canActivateAR) {
-    try {
-      showToast('กำลังเปิดกล้องเทียบขนาดจริง 1:1 บนพื้นห้อง... 📐');
-      viewer.activateAR();
-      return;
-    } catch (err) {
-      console.warn('activateAR error:', err);
-    }
-  }
-  startWebCamera();
-}
-
-if (openCameraBtn) openCameraBtn.addEventListener('click', handleOpenCamera);
+// ปุ่มเปิด-ปิดกล้อง (เปิดหน้ากล้องที่ฟังก์ชันทุกตัว ย้าย/หมุน/รีเซ็ต/ถ่ายรูป ใช้งานได้ครบ 100%)
+if (openCameraBtn) openCameraBtn.addEventListener('click', startWebCamera);
 if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopWebCamera);
 
 // ปุ่มโหมดควบคุม (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง, ถ่ายรูป)
