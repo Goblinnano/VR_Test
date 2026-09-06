@@ -51,15 +51,38 @@
     <!-- Loading spinner ตอนรอโหลดโมเดล -->
     <div class="loading-spinner" id="spinner"></div>
 
-    <!-- ปุ่มเปิดกล้อง AR (Web Camera AR สำหรับ iPhone & Android) -->
+    <!-- ปุ่มเปิดกล้อง AR (Web Camera AR & True AR สแกนโต๊ะจริง) -->
     <div class="action-buttons">
       <button id="openCameraBtn" class="ar-btn">
-        📷 เปิดกล้อง
+        📷 เปิดกล้องในเว็บ
+      </button>
+      <button id="trueArBtn" class="ar-btn true-ar-btn" title="สแกนหาพื้นผิวโต๊ะจริงระดับมิลลิเมตรด้วย AR">
+        🌟 สแกนวางบนโต๊ะจริง (True AR 1:1)
       </button>
     </div>
   </div>
 
   <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า</div>
+
+  <!-- ป้ายแสดงขนาดจริง 1:1 -->
+  <div id="dimensionBadge" class="dimension-badge">
+    <div class="dim-badge-header">📐 ขนาดจริงของสินค้า (มาตราส่วน 1:1)</div>
+    <div class="dim-badge-row">
+      <span>↔ กว้าง: <strong>64.9 ซม.</strong> (หน้าจอ 27")</span>
+      <span>↕ สูง: <strong>50.7 ซม.</strong> (รวมขาตั้ง)</span>
+      <span>↗ ลึก: <strong>31.5 ซม.</strong></span>
+    </div>
+  </div>
+
+  <!-- กรอบอ้างอิงขนาดกระดาษ A4 สำหรับเทียบขนาดบนโต๊ะในกล้อง 2D -->
+  <div id="a4GuideOverlay" class="a4-guide-overlay">
+    <div class="a4-sheet">
+      <div class="a4-label">
+        <strong>📄 กรอบอ้างอิงกระดาษ A4 (21.0 × 29.7 ซม.)</strong>
+        <p>วางกระดาษ A4 บนโต๊ะจริง แล้วขยับกล้องให้ตรงกรอบ เพื่อเทียบขนาดจริง 1:1 ได้ทันที!</p>
+      </div>
+    </div>
+  </div>
 
   <!-- แผงฟังก์ชันควบคุม (ในกล้องจะย้ายไปอยู่ซ้ายบน เรียงเป็นแถวเดียวลงมา) -->
   <div id="cameraControls" class="camera-controls">
@@ -68,6 +91,9 @@
       <button id="moveBtn" class="control-btn" title="กดเพื่อเปิด/ปิดโหมดย้ายตำแหน่ง">🖐️ ย้ายตำแหน่ง</button>
       <button id="rotateBtn" class="control-btn is-active" title="กดเพื่อหยุดการหมุน">⏸️ หยุดหมุน</button>
       <button id="resetBtn" class="control-btn" title="รีเซ็ตกลับตรงกลาง">🎯 รีเซ็ตตรงกลาง</button>
+      <button id="measureBtn" class="control-btn" title="เปิด/ปิดป้ายบอกขนาดจริง">📏 ขนาดจริง</button>
+      <button id="a4GuideBtn" class="control-btn" title="เทียบสเกลด้วยกรอบกระดาษ A4 บนโต๊ะ">📄 เทียบ A4</button>
+      <button id="inCameraTrueArBtn" class="control-btn special-btn" title="สลับไปโหมดสแกนหาพื้นผิวโต๊ะจริง 3D">🌟 สแกนโต๊ะจริง</button>
       <button id="captureBtn" class="control-btn" title="ถ่ายรูปสินค้าในห้องจริง">📸 ถ่ายรูป</button>
     </div>
     <button id="closeCameraBtn" class="close-camera-btn">✕ ปิดกล้อง</button>

@@ -180,6 +180,15 @@ model-viewer {
   transform: translateY(1px);
 }
 
+.ar-btn.true-ar-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.38);
+}
+
+.ar-btn.true-ar-btn:hover {
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.52);
+}
+
 /* ==========================================================
    5. Control Buttons & Camera Controls (ซ่อนในหน้าปกติ แสดงเฉพาะในกล้อง)
    ========================================================== */
@@ -389,18 +398,22 @@ body.camera-active .camera-hint {
 /* แถบปุ่มฟังก์ชัน ด้านซ้ายบนบนหน้าจอกล้อง เรียงเป็นแถวเดียวลงมา */
 body.camera-active .camera-btn-group {
   position: absolute;
-  top: max(65px, env(safe-area-inset-top) + 30px);
-  left: max(16px, env(safe-area-inset-left) + 8px);
+  top: max(55px, env(safe-area-inset-top) + 20px);
+  left: max(14px, env(safe-area-inset-left) + 6px);
   right: auto;
   bottom: auto;
   transform: none;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
   pointer-events: auto;
   z-index: 310;
   width: auto;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 6px;
 }
 
 body.camera-active .control-btn {
@@ -408,8 +421,8 @@ body.camera-active .control-btn {
   color: #ffffff;
   border: 1.5px solid rgba(255, 255, 255, 0.35);
   border-radius: 25px;
-  padding: 10px 18px;
-  font-size: clamp(12px, 2.8vw, 14px);
+  padding: 8px 16px;
+  font-size: clamp(11.5px, 2.7vw, 13.5px);
   font-weight: 600;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(12px);
@@ -423,13 +436,118 @@ body.camera-active .control-btn:active {
   border-color: #4a90e2;
 }
 
+/* ปุ่มพิเศษ True AR สแกนโต๊ะจริง */
+body.camera-active .control-btn.special-btn {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.85) 0%, rgba(5, 150, 105, 0.85) 100%);
+  border-color: #34d399;
+  color: #ffffff;
+}
+
 /* ไฮไลท์เรืองแสงรอบกรอบปุ่มเมื่อเปิดใช้งานฟังก์ชันในกล้อง AR */
 body.camera-active .control-btn.is-active {
   background: rgba(14, 116, 244, 0.35) !important;
   color: #ffffff !important;
   border: 2px solid #00d2ff !important;
   box-shadow: 0 0 18px rgba(0, 210, 255, 0.8), 0 0 6px rgba(255, 255, 255, 0.6), inset 0 0 10px rgba(0, 210, 255, 0.35) !important;
-  transform: scale(1.05);
+  transform: scale(1.04);
+}
+
+/* ป้ายแสดงขนาดจริงของสินค้า 1:1 */
+.dimension-badge {
+  display: none;
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.88);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  z-index: 350;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.dimension-badge.show {
+  display: block;
+}
+
+.dim-badge-header {
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: #67e8f9;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.dim-badge-row {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.dim-badge-row strong {
+  color: #facc15;
+}
+
+/* กรอบอ้างอิงขนาดกระดาษ A4 ในกล้อง 2D */
+.a4-guide-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 250;
+  pointer-events: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.a4-guide-overlay.show {
+  display: flex;
+}
+
+.a4-sheet {
+  width: clamp(260px, 58vw, 420px);
+  height: clamp(180px, 41vw, 297px);
+  border: 2.5px dashed #facc15;
+  background: rgba(250, 204, 21, 0.08);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.3), inset 0 0 15px rgba(250, 204, 21, 0.1);
+  padding: 16px;
+  text-align: center;
+}
+
+.a4-label {
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.a4-label strong {
+  color: #facc15;
+  font-size: 12px;
+  display: block;
+}
+
+.a4-label p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #e2e8f0;
 }
 
 body.camera-active .ar-toast {

@@ -13,6 +13,12 @@ const errorBox = document.querySelector('#errorBox');
 const progressBar = document.querySelector('.progress-bar');
 const openCameraBtn = document.querySelector('#openCameraBtn');
 const closeCameraBtn = document.querySelector('#closeCameraBtn');
+const trueArBtn = document.querySelector('#trueArBtn');
+const inCameraTrueArBtn = document.querySelector('#inCameraTrueArBtn');
+const measureBtn = document.querySelector('#measureBtn');
+const a4GuideBtn = document.querySelector('#a4GuideBtn');
+const dimensionBadge = document.querySelector('#dimensionBadge');
+const a4GuideOverlay = document.querySelector('#a4GuideOverlay');
 const cameraFeed = document.querySelector('#cameraFeed');
 const cameraHint = document.querySelector('.camera-hint');
 const normalHint = document.querySelector('.hint');
@@ -144,6 +150,11 @@ function stopWebCamera() {
     }
   }
 
+  if (dimensionBadge) dimensionBadge.classList.remove('show');
+  if (measureBtn) measureBtn.classList.remove('is-active');
+  if (a4GuideOverlay) a4GuideOverlay.classList.remove('show');
+  if (a4GuideBtn) a4GuideBtn.classList.remove('is-active');
+
   document.body.classList.remove('camera-active');
   updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า');
   showToast('ออกจากโหมดกล้องแล้ว');
@@ -241,6 +252,45 @@ function resetAll() {
 
   updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า 360°');
   showToast('รีเซ็ตสินค้ากลับตรงกลางแล้ว 🎯');
+}
+
+// --- ฟังก์ชันที่ 5: สลับเปิด/ปิดป้ายบอกขนาดจริง 1:1 ---
+function toggleDimensionBadge() {
+  if (!dimensionBadge) return;
+  const isShown = dimensionBadge.classList.toggle('show');
+  if (measureBtn) {
+    measureBtn.classList.toggle('is-active', isShown);
+  }
+  showToast(isShown ? 'เปิดป้ายแสดงขนาดจริง 1:1 📏' : 'ซ่อนป้ายขนาดจริง');
+}
+
+// --- ฟังก์ชันที่ 6: สลับเปิด/ปิดกรอบอ้างอิงกระดาษ A4 บนโต๊ะ ---
+function toggleA4Guide() {
+  if (!a4GuideOverlay) return;
+  const isShown = a4GuideOverlay.classList.toggle('show');
+  if (a4GuideBtn) {
+    a4GuideBtn.classList.toggle('is-active', isShown);
+  }
+  showToast(isShown ? 'เปิดกรอบเทียบกระดาษ A4 บนโต๊ะ 📄' : 'ปิดกรอบเทียบ A4');
+}
+
+// --- ฟังก์ชันที่ 7: เปิดโหมดสแกนหาพื้นผิวโต๊ะจริง (True AR / 3D Spatial Tracking) ---
+async function launchTrueAR() {
+  if (cameraStream) {
+    stopWebCamera();
+  }
+  showToast('กำลังเปิดระบบสแกนพื้นผิวโต๊ะจริง (True AR)... 🌟');
+  try {
+    if (viewer && typeof viewer.activateAR === 'function') {
+      await viewer.activateAR();
+    } else {
+      const nativeArBtn = document.querySelector('#nativeArButton');
+      if (nativeArBtn) nativeArBtn.click();
+    }
+  } catch (err) {
+    console.error('True AR launch error:', err);
+    showToast('กำลังเตรียมความพร้อมของระบบ AR บนอุปกรณ์ของคุณ...');
+  }
 }
 
 // ==============================================================
@@ -415,10 +465,14 @@ async function takeSnapshot() {
 if (openCameraBtn) openCameraBtn.addEventListener('click', startWebCamera);
 if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopWebCamera);
 
-// ปุ่มโหมดควบคุม (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง, ถ่ายรูป)
+// ปุ่มโหมดควบคุม (ย้ายตำแหน่ง, หยุด/หมุนสินค้า, รีเซ็ตตรงกลาง, ขนาดจริง, เทียบ A4, ถ่ายรูป, สแกนโต๊ะจริง)
 if (moveBtn) moveBtn.addEventListener('click', toggleMoveMode);
 if (rotateBtn) rotateBtn.addEventListener('click', toggleRotateMode);
 if (resetBtn) resetBtn.addEventListener('click', resetAll);
+if (measureBtn) measureBtn.addEventListener('click', toggleDimensionBadge);
+if (a4GuideBtn) a4GuideBtn.addEventListener('click', toggleA4Guide);
+if (inCameraTrueArBtn) inCameraTrueArBtn.addEventListener('click', launchTrueAR);
+if (trueArBtn) trueArBtn.addEventListener('click', launchTrueAR);
 if (captureBtn) captureBtn.addEventListener('click', takeSnapshot);
 
 // ป้องกันอีเวนต์แตะปุ่มแล้วส่งผลกระทบต่อการลาก/หมุนโมเดล (Stop Propagation)
@@ -426,6 +480,10 @@ const allButtons = [
   moveBtn,
   rotateBtn,
   resetBtn,
+  measureBtn,
+  a4GuideBtn,
+  inCameraTrueArBtn,
+  trueArBtn,
   captureBtn,
   openCameraBtn,
   closeCameraBtn
