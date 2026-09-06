@@ -377,7 +377,7 @@ async function takeSnapshot() {
         try {
           await navigator.share({
             title: 'รูปสินค้าในห้องจริง',
-            text: 'ลองจัดวางแก้วน้ำสแตนเลสในห้องจริงด้วยระบบ Web AR',
+            text: 'ลองจัดวางหน้าจอคอมพิวเตอร์บนโต๊ะทำงานในห้องจริงด้วยระบบ Web AR',
             files: [file]
           });
           showToast('แชร์รูปถ่ายสำเร็จแล้ว 🎉');
