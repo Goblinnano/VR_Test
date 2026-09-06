@@ -102,12 +102,30 @@ async function startWebCamera() {
     currentTranslateX = 0;
     currentTranslateY = 0;
     applyViewerTransform(false);
+
+    // หยุดการหมุนอัตโนมัติเมื่อเปิดกล้อง เพื่อวางสินค้าบนโต๊ะจริงได้อย่างนิ่งและแม่นยำ
+    isRotating = false;
+    if (rotateBtn) {
+      rotateBtn.classList.remove('is-active');
+      rotateBtn.innerHTML = '▶️ หมุนสินค้า';
+    }
+
     if (viewer) {
+      viewer.autoRotate = false;
+      // รีเซ็ต turntable yaw ให้เป็น 0 เสมอ ป้องกันมุมมองบิดเบี้ยวจาก auto-rotate ก่อนหน้า
+      if (typeof viewer.resetTurntableRotation === 'function') {
+        viewer.resetTurntableRotation(0);
+      }
       viewer.cameraOrbit = '0deg 75deg 105%';
       if (typeof viewer.jumpCameraToGoal === 'function') {
         viewer.jumpCameraToGoal();
       }
     }
+
+    // รีเซ็ตไฮไลท์ปุ่มมุมมองกลับมาที่ 'front'
+    document.querySelectorAll('.angle-btn').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.angle === 'front');
+    });
 
     // อัปเดตข้อความแนะนำตามโหมดปัจจุบัน
     if (isMoveMode) {
@@ -154,6 +172,14 @@ function stopWebCamera() {
   if (measureBtn) measureBtn.classList.remove('is-active');
   if (a4GuideOverlay) a4GuideOverlay.classList.remove('show');
   if (a4GuideBtn) a4GuideBtn.classList.remove('is-active');
+
+  // คืนค่าการหมุนอัตโนมัติสำหรับหน้าโชว์เคสหลัก
+  isRotating = true;
+  if (viewer) viewer.autoRotate = true;
+  if (rotateBtn) {
+    rotateBtn.classList.add('is-active');
+    rotateBtn.innerHTML = '⏸️ หยุดหมุน';
+  }
 
   document.body.classList.remove('camera-active');
   updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า');
@@ -236,6 +262,9 @@ function resetAll() {
 
   // รีเซ็ตมุมมองและทิศทางกล้องของ model-viewer
   if (viewer) {
+    if (typeof viewer.resetTurntableRotation === 'function') {
+      viewer.resetTurntableRotation(0);
+    }
     viewer.cameraOrbit = '0deg 75deg 105%';
     if (typeof viewer.jumpCameraToGoal === 'function') {
       viewer.jumpCameraToGoal();
@@ -273,7 +302,12 @@ function setProductAngle(angleName) {
     }
   }
 
-  // 2. กำหนดพิกัด cameraOrbit ตามองศาที่เลือก (มุมกล้องค่อยๆ หมุนอย่างนุ่มนวล)
+  // 2. รีเซ็ตแกน turntable ให้เป็น 0 เสมอ เพื่อให้ทิศทางหน้า/ซ้าย/ขวา/หลังตรงกับโมเดล 100%
+  if (typeof viewer.resetTurntableRotation === 'function') {
+    viewer.resetTurntableRotation(0);
+  }
+
+  // 3. กำหนดพิกัด cameraOrbit ตามองศาที่เลือก (มุมกล้องค่อยๆ หมุนอย่างนุ่มนวล)
   let orbit = '0deg 75deg 105%';
   let label = 'ด้านหน้า 🖥️ (0°)';
 
@@ -297,6 +331,9 @@ function setProductAngle(angleName) {
   }
 
   viewer.cameraOrbit = orbit;
+  if (typeof viewer.jumpCameraToGoal === 'function') {
+    viewer.jumpCameraToGoal();
+  }
 
   // 3. อัปเดตไฮไลท์ปุ่มมุมมองทั้งหมด
   document.querySelectorAll('.angle-btn').forEach((btn) => {
