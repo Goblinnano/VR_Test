@@ -244,6 +244,61 @@ model-viewer {
   transform: scale(1.02);
 }
 
+/* แถบปุ่มเลือกมุมมองมาตรฐาน (หน้า, ซ้าย, ขวา, หลัง) */
+.angle-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 5px 12px;
+  border-radius: 30px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 50;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.angle-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  margin-right: 2px;
+}
+
+.angle-btn {
+  background: transparent;
+  color: #334155;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 6px 13px;
+  font-size: clamp(12px, 2.7vw, 13px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.angle-btn:hover {
+  background: rgba(74, 144, 226, 0.12);
+  color: #1a73e8;
+}
+
+.angle-btn:active {
+  transform: scale(0.96);
+}
+
+.angle-btn.is-active {
+  background: #1a73e8;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.35);
+}
+
 .hint {
   display: flex;
   align-items: center;
@@ -374,6 +429,43 @@ body.camera-active .close-camera-btn {
 body.camera-active .close-camera-btn:active {
   background: rgba(220, 38, 38, 0.85);
   border-color: transparent;
+}
+
+/* แถบเลือกมุมมองในโหมดกล้อง ลอยอยู่ด้านล่างกึ่งกลาง */
+body.camera-active .angle-selector {
+  display: flex !important;
+  position: fixed;
+  bottom: max(68px, env(safe-area-inset-bottom) + 52px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 320;
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  margin-top: 0;
+}
+
+body.camera-active .angle-label {
+  color: #94a3b8;
+}
+
+body.camera-active .angle-btn {
+  color: #e2e8f0;
+}
+
+body.camera-active .angle-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+body.camera-active .angle-btn.is-active {
+  background: #0ea5e9;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.7);
+  border-color: #38bdf8;
 }
 
 /* ข้อความแนะนำบนหน้าจอกล้อง ด้านล่างตรงกลาง */

@@ -250,8 +250,64 @@ function resetAll() {
     }, 450);
   }
 
+  // รีเซ็ตไฮไลท์ปุ่มมุมมองกลับมาที่ 'front'
+  document.querySelectorAll('.angle-btn').forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset.angle === 'front');
+  });
+
   updateHintText('👆 ลากนิ้วเพื่อหมุนดูสินค้า 360°');
   showToast('รีเซ็ตสินค้ากลับตรงกลางแล้ว 🎯');
+}
+
+// --- ฟังก์ชันที่ 5: หมุนสินค้าไปยังมุมมองมาตรฐาน (หน้า, ซ้าย, ขวา, หลัง) ---
+function setProductAngle(angleName) {
+  if (!viewer) return;
+
+  // 1. หยุดการหมุนอัตโนมัติ เพื่อให้ล็อกอยู่ที่องศาที่เลือก
+  if (isRotating) {
+    isRotating = false;
+    viewer.autoRotate = false;
+    if (rotateBtn) {
+      rotateBtn.classList.remove('is-active');
+      rotateBtn.innerHTML = '▶️ หมุนสินค้า';
+    }
+  }
+
+  // 2. กำหนดพิกัด cameraOrbit ตามองศาที่เลือก (มุมกล้องค่อยๆ หมุนอย่างนุ่มนวล)
+  let orbit = '0deg 75deg 105%';
+  let label = 'ด้านหน้า 🖥️ (0°)';
+
+  switch (angleName) {
+    case 'front':
+      orbit = '0deg 75deg 105%';
+      label = 'ด้านหน้า 🖥️ (0°)';
+      break;
+    case 'left':
+      orbit = '-90deg 75deg 105%';
+      label = 'ด้านซ้าย 👈 (90°)';
+      break;
+    case 'right':
+      orbit = '90deg 75deg 105%';
+      label = 'ด้านขวา 👉 (90°)';
+      break;
+    case 'back':
+      orbit = '180deg 75deg 105%';
+      label = 'ด้านหลัง 🔙 (180°)';
+      break;
+  }
+
+  viewer.cameraOrbit = orbit;
+
+  // 3. อัปเดตไฮไลท์ปุ่มมุมมองทั้งหมด
+  document.querySelectorAll('.angle-btn').forEach((btn) => {
+    if (btn.dataset.angle === angleName) {
+      btn.classList.add('is-active');
+    } else {
+      btn.classList.remove('is-active');
+    }
+  });
+
+  showToast(`หมุนไปยังมุมมอง${label}`);
 }
 
 // --- ฟังก์ชันที่ 5: สลับเปิด/ปิดป้ายบอกขนาดจริง 1:1 ---
@@ -302,7 +358,7 @@ window.addEventListener('pointerdown', (e) => {
   if (!isMoveMode) return;
 
   // เมินเฉยต่อการแตะปุ่มควบคุมต่างๆ เพื่อให้กดปุ่มได้ตามปกติ
-  if (e.target.closest('button') || e.target.closest('.camera-btn-group') || e.target.closest('.action-buttons')) {
+  if (e.target.closest('button') || e.target.closest('.camera-btn-group') || e.target.closest('.action-buttons') || e.target.closest('.angle-selector')) {
     return;
   }
 
@@ -475,6 +531,16 @@ if (inCameraTrueArBtn) inCameraTrueArBtn.addEventListener('click', launchTrueAR)
 if (trueArBtn) trueArBtn.addEventListener('click', launchTrueAR);
 if (captureBtn) captureBtn.addEventListener('click', takeSnapshot);
 
+// ปุ่มเลือกมุมมองมาตรฐาน (หน้า / ซ้าย / ขวา / หลัง)
+const angleButtons = Array.from(document.querySelectorAll('.angle-btn'));
+angleButtons.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const angle = btn.dataset.angle;
+    if (angle) setProductAngle(angle);
+  });
+});
+
 // ป้องกันอีเวนต์แตะปุ่มแล้วส่งผลกระทบต่อการลาก/หมุนโมเดล (Stop Propagation)
 const allButtons = [
   moveBtn,
@@ -486,7 +552,8 @@ const allButtons = [
   trueArBtn,
   captureBtn,
   openCameraBtn,
-  closeCameraBtn
+  closeCameraBtn,
+  ...angleButtons
 ];
 
 allButtons.forEach((btn) => {
