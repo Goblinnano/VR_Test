@@ -423,42 +423,160 @@ body.camera-active .close-camera-btn:active {
   border-color: transparent;
 }
 
-/* แถบเลือกมุมมองในโหมดกล้อง ลอยอยู่ด้านล่างกึ่งกลาง */
+/* แถบเลือกมุมมองในโหมดกล้อง ลอยอยู่ด้านล่างกึ่งกลาง สไตล์ Floating Glass Pill Dock */
 body.camera-active .angle-selector {
   display: flex !important;
+  flex-direction: column;
+  align-items: center;
   position: fixed;
-  bottom: max(68px, env(safe-area-inset-bottom) + 52px);
+  bottom: max(64px, env(safe-area-inset-bottom) + 48px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 320;
   pointer-events: auto;
-  background: rgba(15, 23, 42, 0.84);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border-radius: 26px;
+  padding: 6px 8px 8px;
+  gap: 5px;
   margin-top: 0;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-body.camera-active .angle-label {
+.angle-dock-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px 0;
+}
+
+.angle-dock-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.55; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+.angle-dock-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
   color: #94a3b8;
 }
 
-body.camera-active .angle-btn {
-  color: #e2e8f0;
+.angle-segmented-control {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.38);
+  padding: 3px;
+  border-radius: 19px;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-body.camera-active .angle-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+.angle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  padding: 5px 14px 4px;
+  min-width: 56px;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.angle-btn-icon {
+  font-size: 15px;
+  line-height: 1.15;
+  margin-bottom: 2px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.angle-btn-text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+}
+
+.angle-btn-deg {
+  font-size: 9px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.4px;
+  margin-top: 1px;
+  transition: color 0.25s ease;
+}
+
+.angle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
-body.camera-active .angle-btn.is-active {
-  background: #0ea5e9;
+.angle-btn:hover .angle-btn-icon {
+  transform: translateY(-1.5px);
+}
+
+.angle-btn:hover .angle-btn-deg {
+  color: #94a3b8;
+}
+
+.angle-btn:active {
+  transform: scale(0.94);
+}
+
+.angle-btn.is-active {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(14, 165, 233, 0.75);
-  border-color: #38bdf8;
-  transform: scale(1.05);
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.25) inset;
+  transform: scale(1.02);
+}
+
+.angle-btn.is-active .angle-btn-icon {
+  transform: scale(1.12);
+}
+
+.angle-btn.is-active .angle-btn-text {
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.angle-btn.is-active .angle-btn-deg {
+  color: #bae6fd;
+  font-weight: 700;
+}
+
+/* วางตำแหน่ง Toast ลอยอยู่เหนือแผงมุมมองพอดี สไตล์ HUD Tooltip ในโหมดกล้อง */
+body.camera-active .ar-toast {
+  bottom: max(172px, env(safe-area-inset-bottom) + 158px) !important;
+  top: auto !important;
+  z-index: 400;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  font-size: 12.5px;
+  padding: 8px 18px;
+  border-radius: 20px;
 }
 
 /* ข้อความแนะนำบนหน้าจอกล้อง ด้านล่างตรงกลาง */

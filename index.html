@@ -90,13 +90,34 @@
   <div id="cameraControls" class="camera-controls">
     <div class="camera-hint">👆 ใช้นิ้วลากเพื่อหมุนดูสินค้า 360°</div>
 
-    <!-- แถบปุ่มหมุนมุมมองมาตรฐาน (หน้า / ซ้าย / ขวา / หลัง) ในกล้อง -->
+    <!-- แถบปุ่มหมุนมุมมองมาตรฐาน (หน้า / ซ้าย / ขวา / หลัง) ในกล้อง ดีไซน์หรูหราแบบ Segmented Glass Pill -->
     <div id="angleSelector" class="angle-selector">
-      <span class="angle-label">🔄 มุมมอง:</span>
-      <button class="angle-btn is-active" data-angle="front" title="หมุนมาด้านหน้า (0°)">🖥️ หน้า</button>
-      <button class="angle-btn" data-angle="left" title="หมุนไปด้านซ้าย (90°)">👈 ซ้าย</button>
-      <button class="angle-btn" data-angle="right" title="หมุนไปด้านขวา (90°)">👉 ขวา</button>
-      <button class="angle-btn" data-angle="back" title="หมุนไปด้านหลัง (180°)">🔙 หลัง</button>
+      <div class="angle-dock-header">
+        <span class="angle-dock-dot"></span>
+        <span class="angle-dock-title">มุมมอง 3D Preset</span>
+      </div>
+      <div class="angle-segmented-control">
+        <button class="angle-btn is-active" data-angle="front" title="หมุนมาด้านหน้าตรง (0°)">
+          <span class="angle-btn-icon">🖥️</span>
+          <span class="angle-btn-text">หน้า</span>
+          <span class="angle-btn-deg">0°</span>
+        </button>
+        <button class="angle-btn" data-angle="left" title="หมุนไปด้านซ้าย (-90°)">
+          <span class="angle-btn-icon">👈</span>
+          <span class="angle-btn-text">ซ้าย</span>
+          <span class="angle-btn-deg">90°</span>
+        </button>
+        <button class="angle-btn" data-angle="right" title="หมุนไปด้านขวา (90°)">
+          <span class="angle-btn-icon">👉</span>
+          <span class="angle-btn-text">ขวา</span>
+          <span class="angle-btn-deg">90°</span>
+        </button>
+        <button class="angle-btn" data-angle="back" title="หมุนไปด้านหลัง (180°)">
+          <span class="angle-btn-icon">🔙</span>
+          <span class="angle-btn-text">หลัง</span>
+          <span class="angle-btn-deg">180°</span>
+        </button>
+      </div>
     </div>
 
     <div class="camera-btn-group">
