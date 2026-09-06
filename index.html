@@ -62,16 +62,7 @@
     </div>
   </div>
 
-  <!-- แถบปุ่มหมุนมุมมองมาตรฐาน (หน้า / ซ้าย / ขวา / หลัง) -->
-  <div id="angleSelector" class="angle-selector">
-    <span class="angle-label">🔄 มุมมอง:</span>
-    <button class="angle-btn is-active" data-angle="front" title="หมุนมาด้านหน้า (0°)">🖥️ หน้า</button>
-    <button class="angle-btn" data-angle="left" title="หมุนไปด้านซ้าย (90°)">👈 ซ้าย</button>
-    <button class="angle-btn" data-angle="right" title="หมุนไปด้านขวา (90°)">👉 ขวา</button>
-    <button class="angle-btn" data-angle="back" title="หมุนไปด้านหลัง (180°)">🔙 หลัง</button>
-  </div>
-
-  <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า หรือกดปุ่มเปลี่ยนมุมมองด้านบน</div>
+  <div class="hint">👆 ลากนิ้วเพื่อหมุนดูสินค้า</div>
 
   <!-- ป้ายแสดงขนาดจริง 1:1 -->
   <div id="dimensionBadge" class="dimension-badge">
@@ -93,9 +84,19 @@
     </div>
   </div>
 
-  <!-- แผงฟังก์ชันควบคุม (ในกล้องจะย้ายไปอยู่ซ้ายบน เรียงเป็นแถวเดียวลงมา) -->
+  <!-- แผงฟังก์ชันควบคุม (แสดงเฉพาะในโหมดกล้องในเว็บเท่านั้น) -->
   <div id="cameraControls" class="camera-controls">
     <div class="camera-hint">👆 ใช้นิ้วลากเพื่อหมุนดูสินค้า 360°</div>
+
+    <!-- แถบปุ่มหมุนมุมมองมาตรฐาน (หน้า / ซ้าย / ขวา / หลัง) ในกล้อง -->
+    <div id="angleSelector" class="angle-selector">
+      <span class="angle-label">🔄 มุมมอง:</span>
+      <button class="angle-btn is-active" data-angle="front" title="หมุนมาด้านหน้า (0°)">🖥️ หน้า</button>
+      <button class="angle-btn" data-angle="left" title="หมุนไปด้านซ้าย (90°)">👈 ซ้าย</button>
+      <button class="angle-btn" data-angle="right" title="หมุนไปด้านขวา (90°)">👉 ขวา</button>
+      <button class="angle-btn" data-angle="back" title="หมุนไปด้านหลัง (180°)">🔙 หลัง</button>
+    </div>
+
     <div class="camera-btn-group">
       <button id="moveBtn" class="control-btn" title="กดเพื่อเปิด/ปิดโหมดย้ายตำแหน่ง">🖐️ ย้ายตำแหน่ง</button>
       <button id="rotateBtn" class="control-btn is-active" title="กดเพื่อหยุดการหมุน">⏸️ หยุดหมุน</button>
