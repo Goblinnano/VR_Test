@@ -266,9 +266,6 @@ function resetAll() {
       viewer.resetTurntableRotation(0);
     }
     viewer.cameraOrbit = '0deg 75deg 105%';
-    if (typeof viewer.jumpCameraToGoal === 'function') {
-      viewer.jumpCameraToGoal();
-    }
   }
 
   // กะพริบไฮไลท์ปุ่มรีเซ็ตสั้นๆ เพื่อให้การตอบสนองที่ชัดเจน
@@ -330,12 +327,10 @@ function setProductAngle(angleName) {
       break;
   }
 
+  // 3. กำหนดพิกัด cameraOrbit ตามองศาที่เลือก (ให้หมุนอย่างนุ่มนวล สมูทไหลลื่น ไม่กระตุก)
   viewer.cameraOrbit = orbit;
-  if (typeof viewer.jumpCameraToGoal === 'function') {
-    viewer.jumpCameraToGoal();
-  }
 
-  // 3. อัปเดตไฮไลท์ปุ่มมุมมองทั้งหมด
+  // 4. อัปเดตไฮไลท์ปุ่มมุมมองทั้งหมด
   document.querySelectorAll('.angle-btn').forEach((btn) => {
     if (btn.dataset.angle === angleName) {
       btn.classList.add('is-active');
