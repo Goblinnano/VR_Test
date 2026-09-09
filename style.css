@@ -631,13 +631,6 @@ body.camera-active .control-btn:active {
   border-color: #4a90e2;
 }
 
-/* ปุ่มพิเศษ True AR สแกนโต๊ะจริง (สลับออกจากโหมดกล้องเว็บ) */
-body.camera-active .control-btn.special-btn {
-  margin-top: 4px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.85) 0%, rgba(5, 150, 105, 0.85) 100%);
-  border-color: #34d399;
-  color: #ffffff;
-}
 
 /* ไฮไลท์เรืองแสงรอบกรอบปุ่มเมื่อเปิดใช้งานฟังก์ชันในกล้อง AR */
 body.camera-active .control-btn.is-active {
