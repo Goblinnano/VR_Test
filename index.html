@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>โน้ตบุ๊ก Acer Nitro 5 - ดูสินค้าแบบ 3D/AR</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -15,6 +15,12 @@
   <div class="header">
     <h1>โน้ตบุ๊ก Acer Nitro 5 (AN515-51-78CC/T016)</h1>
     <p>โน้ตบุ๊กเกมมิ่ง 15.6" Full HD IPS, Intel Core i7-7700HQ, GTX 1050 ดีไซน์เปิดหน้าจอพร้อมใช้งาน เทียบขนาดจริงบนโต๊ะทำงานได้ทันที</p>
+  </div>
+
+  <!-- แถบสลับโหมด: 🧊 โมเดล 3D (หมุน 360°) / 📸 รูปถ่ายจริง 100% -->
+  <div class="view-mode-tabs">
+    <button id="tab3D" class="mode-tab is-active" title="ดูโมเดล 3D หมุน 360°">🧊 โมเดล 3D</button>
+    <button id="tabPhoto" class="mode-tab" title="ดูรูปถ่ายสินค้าจริงจากสตูดิโอ 100%">📸 รูปถ่ายจริง 100%</button>
   </div>
 
   <div class="viewer-container">
@@ -49,6 +55,11 @@
       <div id="ar-toast" class="ar-toast"></div>
 
     </model-viewer>
+
+    <!-- รูปถ่ายสินค้าจริง 100% (Acer Nitro 5 จากสตูดิโอ คมชัดระดับ Official) -->
+    <div id="realPhotoContainer" class="real-photo-container">
+      <img src="nitro5_real.png" id="realPhotoImg" alt="รูปถ่ายจริง Acer Nitro 5 (AN515-51)" class="real-photo-img">
+    </div>
 
     <!-- Loading spinner ตอนรอโหลดโมเดล -->
     <div class="loading-spinner" id="spinner"></div>
@@ -121,6 +132,7 @@
 
     <div class="camera-btn-group">
       <button id="moveBtn" class="control-btn" title="กดเพื่อเปิด/ปิดโหมดย้ายตำแหน่ง">🖐️ ย้ายตำแหน่ง</button>
+      <button id="photoModeBtn" class="control-btn" title="สลับระหว่างโมเดล 3D กับรูปถ่ายจริง">🖼️ รูปจริง</button>
       <button id="rotateBtn" class="control-btn" title="กดเพื่อเปิด/ปิดการหมุนสินค้า">▶️ หมุนสินค้า</button>
       <button id="measureBtn" class="control-btn" title="เปิด/ปิดป้ายบอกขนาดจริง">📏 ขนาดจริง</button>
       <button id="a4GuideBtn" class="control-btn" title="เทียบสเกลด้วยกรอบกระดาษ A4 บนโต๊ะ">📄 เทียบ A4</button>
@@ -137,7 +149,7 @@
     ⚠️ ไม่สามารถโหลดโมเดลได้ กรุณาลองใหม่อีกครั้ง
   </div>
 
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=6"></script>
 
 </body>
 </html>

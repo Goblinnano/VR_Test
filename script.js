@@ -22,6 +22,11 @@ const a4GuideOverlay = document.querySelector('#a4GuideOverlay');
 const cameraFeed = document.querySelector('#cameraFeed');
 const cameraHint = document.querySelector('.camera-hint');
 const normalHint = document.querySelector('.hint');
+const tab3D = document.querySelector('#tab3D');
+const tabPhoto = document.querySelector('#tabPhoto');
+const realPhotoContainer = document.querySelector('#realPhotoContainer');
+const realPhotoImg = document.querySelector('#realPhotoImg');
+const photoModeBtn = document.querySelector('#photoModeBtn');
 
 // แสดง spinner ระหว่างรอโหลดโมเดล 3D
 if (spinner) spinner.style.display = 'block';
@@ -33,6 +38,7 @@ let cameraStream = null;
 let isMoveMode = false;      // โหมดลากย้ายตำแหน่ง (เปิด=ย้าย, ปิด=หมุน)
 let isRotating = true;       // โหมดหมุนอัตโนมัติ (เปิด=หมุน, ปิด=หยุด)
 let isDragging = false;      // กำลังลากนิ้วอยู่หรือไม่
+let isRealPhotoMode = false; // โหมดรูปถ่ายจริง (เปิด=รูปจริง, ปิด=โมเดล 3D)
 let lastPointerX = 0;
 let lastPointerY = 0;
 let currentTranslateX = 0;   // พิกัดการเลื่อนแนวนอน (px)
@@ -42,15 +48,18 @@ let currentTranslateY = 0;   // พิกัดการเลื่อนแน
 // 3. ฟังก์ชันการแสดงผลและการแปลงพิกัด (Transform & Hints)
 // ==============================================================
 
-// อัปเดตตำแหน่งการแสดงผลของโมเดล 3D แบบฮาร์ดแวร์เร่งความเร็ว (GPU translate3d)
+// อัปเดตตำแหน่งการแสดงผลของโมเดล 3D และรูปถ่ายจริง (GPU translate3d)
 function applyViewerTransform(animated = false) {
-  if (!viewer) return;
-  if (animated) {
-    viewer.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1)';
-  } else {
-    viewer.style.transition = 'none';
+  const trans = `translate3d(${currentTranslateX}px, ${currentTranslateY}px, 0)`;
+  const transition = animated ? 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none';
+  if (viewer) {
+    viewer.style.transition = transition;
+    viewer.style.transform = trans;
   }
-  viewer.style.transform = `translate3d(${currentTranslateX}px, ${currentTranslateY}px, 0)`;
+  if (realPhotoContainer) {
+    realPhotoContainer.style.transition = transition;
+    realPhotoContainer.style.transform = trans;
+  }
 }
 
 // อัปเดตข้อความแนะนำการใช้งานบนหน้าจอ
@@ -362,7 +371,46 @@ function toggleA4Guide() {
   showToast(isShown ? 'เปิดกรอบเทียบกระดาษ A4 บนโต๊ะ 📄' : 'ปิดกรอบเทียบ A4');
 }
 
-// --- ฟังก์ชันที่ 7: เปิดโหมดสแกนหาพื้นผิวโต๊ะจริง (True AR / 3D Spatial Tracking) ---
+// --- ฟังก์ชันที่ 7: สลับระหว่างโหมดโมเดล 3D และรูปถ่ายจริง 100% ---
+function setViewMode(mode) {
+  if (mode === 'photo') {
+    isRealPhotoMode = true;
+    if (tab3D) tab3D.classList.remove('is-active');
+    if (tabPhoto) tabPhoto.classList.add('is-active');
+    if (viewer) viewer.style.display = 'none';
+    if (realPhotoContainer) realPhotoContainer.classList.add('show');
+    document.body.classList.add('real-photo-active');
+    if (photoModeBtn) {
+      photoModeBtn.classList.add('is-active');
+      photoModeBtn.innerHTML = '🧊 ดูแบบ 3D';
+    }
+    if (rotateBtn) rotateBtn.style.opacity = '0.35';
+    if (document.querySelector('#angleSelector')) document.querySelector('#angleSelector').style.opacity = '0.35';
+    updateHintText('📸 รูปถ่ายสินค้าจริง 100% จากสตูดิโอ (Acer Nitro 5)');
+    showToast('สลับมาดูรูปถ่ายจริง 100% 📸');
+  } else {
+    isRealPhotoMode = false;
+    if (tab3D) tab3D.classList.add('is-active');
+    if (tabPhoto) tabPhoto.classList.remove('is-active');
+    if (viewer) viewer.style.display = 'block';
+    if (realPhotoContainer) realPhotoContainer.classList.remove('show');
+    document.body.classList.remove('real-photo-active');
+    if (photoModeBtn) {
+      photoModeBtn.classList.remove('is-active');
+      photoModeBtn.innerHTML = '🖼️ รูปจริง';
+    }
+    if (rotateBtn) rotateBtn.style.opacity = '';
+    if (document.querySelector('#angleSelector')) document.querySelector('#angleSelector').style.opacity = '';
+    updateHintText(isMoveMode ? '👆 ลากนิ้วบนหน้าจอ เพื่อเลื่อนตำแหน่งสินค้า' : '👆 ลากนิ้วเพื่อหมุนดูสินค้า');
+    showToast('สลับมาดูโมเดล 3D (360°) 🧊');
+  }
+}
+
+function toggleRealPhotoMode() {
+  setViewMode(isRealPhotoMode ? '3d' : 'photo');
+}
+
+// --- ฟังก์ชันที่ 8: เปิดโหมดสแกนหาพื้นผิวโต๊ะจริง (True AR / 3D Spatial Tracking) ---
 async function launchTrueAR() {
   if (cameraStream) {
     stopWebCamera();
@@ -484,38 +532,47 @@ async function takeSnapshot() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // 3. ดึงภาพโมเดล 3D แบบพื้นหลังโปร่งใสจาก model-viewer
-    const modelBlob = await viewer.toBlob({ idealAspect: false });
-    if (!modelBlob) {
-      throw new Error('Could not capture model-viewer blob');
+    // 3. ดึงภาพโมเดล 3D หรือภาพถ่ายจริงแบบโปร่งใส
+    if (isRealPhotoMode && realPhotoImg) {
+      const rect = realPhotoImg.getBoundingClientRect();
+      const imgX = Math.round(rect.left * dpr);
+      const imgY = Math.round(rect.top * dpr);
+      const imgW = Math.round(rect.width * dpr);
+      const imgH = Math.round(rect.height * dpr);
+      ctx.drawImage(realPhotoImg, imgX, imgY, imgW, imgH);
+    } else {
+      const modelBlob = await viewer.toBlob({ idealAspect: false });
+      if (!modelBlob) {
+        throw new Error('Could not capture model-viewer blob');
+      }
+
+      const modelImg = new Image();
+      await new Promise((resolve, reject) => {
+        modelImg.onload = resolve;
+        modelImg.onerror = reject;
+        modelImg.src = URL.createObjectURL(modelBlob);
+      });
+
+      // 4. วาดโมเดล 3D ลงบนผืนผ้าใบตามตำแหน่งที่ผู้ใช้ลากเลื่อนไว้จริง
+      const offsetX = Math.round(currentTranslateX * dpr);
+      const offsetY = Math.round(currentTranslateY * dpr);
+      ctx.drawImage(modelImg, offsetX, offsetY, canvas.width, canvas.height);
+      URL.revokeObjectURL(modelImg.src);
     }
-
-    const modelImg = new Image();
-    await new Promise((resolve, reject) => {
-      modelImg.onload = resolve;
-      modelImg.onerror = reject;
-      modelImg.src = URL.createObjectURL(modelBlob);
-    });
-
-    // 4. วาดโมเดล 3D ลงบนผืนผ้าใบตามตำแหน่งที่ผู้ใช้ลากเลื่อนไว้จริง
-    const offsetX = Math.round(currentTranslateX * dpr);
-    const offsetY = Math.round(currentTranslateY * dpr);
-    ctx.drawImage(modelImg, offsetX, offsetY, canvas.width, canvas.height);
-    URL.revokeObjectURL(modelImg.src);
 
     // 5. บันทึกรูปภาพลงเครื่อง หรือเปิด Native Share Sheet บนมือถือ
     canvas.toBlob(async (blob) => {
       if (!blob) return;
       const now = new Date();
-      const fileName = `ar-photo-${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}-${now.getHours()}${now.getMinutes()}.png`;
+      const fileName = `nitro5-photo-${now.getFullYear()}${now.getMonth() + 1}${now.getDate()}-${now.getHours()}${now.getMinutes()}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
       // บน iPhone และ Android: ใช้ Web Share API ให้บันทึกลง Photos หรือแชร์ LINE ได้ทันที
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
-            title: 'รูปสินค้าในห้องจริง',
-            text: 'ลองจัดวางหน้าจอคอมพิวเตอร์บนโต๊ะทำงานในห้องจริงด้วยระบบ Web AR',
+            title: 'รูปโน้ตบุ๊ก Acer Nitro 5',
+            text: 'ลองจัดวางโน้ตบุ๊ก Acer Nitro 5 บนโต๊ะทำงานในห้องจริงด้วยระบบ Web AR',
             files: [file]
           });
           showToast('แชร์รูปถ่ายสำเร็จแล้ว 🎉');
@@ -549,6 +606,11 @@ async function takeSnapshot() {
 // 8. ผูกอีเวนต์ปุ่มกดและการทำงาน
 // ==============================================================
 
+// แถบสลับโหมด: 🧊 โมเดล 3D / 📸 รูปถ่ายจริง 100%
+if (tab3D) tab3D.addEventListener('click', () => setViewMode('3d'));
+if (tabPhoto) tabPhoto.addEventListener('click', () => setViewMode('photo'));
+if (photoModeBtn) photoModeBtn.addEventListener('click', toggleRealPhotoMode);
+
 // ปุ่มเปิด-ปิดกล้อง (เปิดหน้ากล้องที่ฟังก์ชันทุกตัว ย้าย/หมุน/รีเซ็ต/ถ่ายรูป ใช้งานได้ครบ 100%)
 if (openCameraBtn) openCameraBtn.addEventListener('click', startWebCamera);
 if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopWebCamera);
@@ -575,6 +637,9 @@ angleButtons.forEach((btn) => {
 
 // ป้องกันอีเวนต์แตะปุ่มแล้วส่งผลกระทบต่อการลาก/หมุนโมเดล (Stop Propagation)
 const allButtons = [
+  tab3D,
+  tabPhoto,
+  photoModeBtn,
   moveBtn,
   rotateBtn,
   resetBtn,

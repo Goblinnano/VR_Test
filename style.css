@@ -63,8 +63,48 @@ body.camera-active #cameraFeed {
   line-height: 1.4;
 }
 
+/* แถบสลับโหมด: 🧊 โมเดล 3D / 📸 รูปถ่ายจริง 100% */
+.view-mode-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.07);
+  padding: 4px;
+  border-radius: 30px;
+  margin: 10px auto 14px;
+  gap: 4px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.mode-tab {
+  border: none;
+  background: transparent;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: clamp(12px, 2.8vw, 14px);
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mode-tab:hover {
+  color: #1a1a1a;
+}
+
+.mode-tab.is-active {
+  background: #ffffff;
+  color: #1a73e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+}
+
 /* ==========================================================
-   3. 3D Viewer Container & Model-Viewer
+   3. 3D Viewer Container & Model-Viewer & Real Photo
    ========================================================== */
 .viewer-container {
   position: relative;
@@ -85,6 +125,59 @@ model-viewer {
   border-radius: 18px;
   outline: none;
   touch-action: pan-y;
+}
+
+/* กล่องแสดงรูปถ่ายจริง 100% */
+.real-photo-container {
+  display: none;
+  width: 100%;
+  height: clamp(340px, 52vh, 600px);
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 18px;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, rgba(226, 232, 240, 0.6) 100%);
+  user-select: none;
+  -webkit-user-select: none;
+  transition: opacity 0.3s ease;
+}
+
+.real-photo-container.show {
+  display: flex;
+}
+
+.real-photo-img {
+  max-width: 92%;
+  max-height: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+}
+
+body.camera-active .view-mode-tabs {
+  display: none !important;
+}
+
+body.camera-active.real-photo-active model-viewer {
+  display: none !important;
+}
+
+body.camera-active.real-photo-active .real-photo-container {
+  display: flex !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent !important;
+  pointer-events: auto;
+  touch-action: none;
+  z-index: 200;
+}
+
+body.camera-active.real-photo-active .real-photo-img {
+  max-width: clamp(280px, 75vw, 440px);
+  filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.6));
 }
 
 /* Loading spinner */
