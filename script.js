@@ -116,7 +116,7 @@ async function startWebCamera() {
       if (typeof viewer.resetTurntableRotation === 'function') {
         viewer.resetTurntableRotation(0);
       }
-      viewer.cameraOrbit = '0deg 75deg 105%';
+      viewer.cameraOrbit = '0deg 70deg 105%';
       if (typeof viewer.jumpCameraToGoal === 'function') {
         viewer.jumpCameraToGoal();
       }
@@ -265,7 +265,7 @@ function resetAll() {
     if (typeof viewer.resetTurntableRotation === 'function') {
       viewer.resetTurntableRotation(0);
     }
-    viewer.cameraOrbit = '0deg 75deg 105%';
+    viewer.cameraOrbit = '0deg 70deg 105%';
   }
 
   // กะพริบไฮไลท์ปุ่มรีเซ็ตสั้นๆ เพื่อให้การตอบสนองที่ชัดเจน
@@ -305,24 +305,24 @@ function setProductAngle(angleName) {
   }
 
   // 3. กำหนดพิกัด cameraOrbit ตามองศาที่เลือก (มุมกล้องค่อยๆ หมุนอย่างนุ่มนวล)
-  let orbit = '0deg 75deg 105%';
-  let label = 'ด้านหน้า 🖥️ (0°)';
+  let orbit = '0deg 70deg 105%';
+  let label = 'ด้านหน้า 💻 (0°)';
 
   switch (angleName) {
     case 'front':
-      orbit = '0deg 75deg 105%';
-      label = 'ด้านหน้า 🖥️ (0°)';
+      orbit = '0deg 70deg 105%';
+      label = 'ด้านหน้า 💻 (0°)';
       break;
     case 'left':
-      orbit = '-90deg 75deg 105%';
+      orbit = '-90deg 70deg 105%';
       label = 'ด้านซ้าย 👈 (90°)';
       break;
     case 'right':
-      orbit = '90deg 75deg 105%';
+      orbit = '90deg 70deg 105%';
       label = 'ด้านขวา 👉 (90°)';
       break;
     case 'back':
-      orbit = '180deg 75deg 105%';
+      orbit = '180deg 70deg 105%';
       label = 'ด้านหลัง 🔙 (180°)';
       break;
   }
