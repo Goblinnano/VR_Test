@@ -423,67 +423,47 @@ body.camera-active .close-camera-btn:active {
   border-color: transparent;
 }
 
-/* แถบเลือกมุมมองในโหมดกล้อง ลอยอยู่ด้านล่างกึ่งกลาง สไตล์ Floating Glass Pill Dock */
+/* แถบเลือกมุมมองในโหมดกล้อง ลอยอยู่ชิดขอบล่าง สไตล์ Compact Glass Pill Dock */
 body.camera-active .angle-selector {
   display: flex !important;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   position: fixed;
-  bottom: max(64px, env(safe-area-inset-bottom) + 48px);
+  bottom: max(12px, env(safe-area-inset-bottom) + 6px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 320;
   pointer-events: auto;
-  background: rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border-radius: 26px;
-  padding: 6px 8px 8px;
-  gap: 5px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 22px;
+  padding: 3px 5px;
+  gap: 0;
   margin-top: 0;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.angle-dock-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 8px 0;
-}
-
-.angle-dock-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 8px #38bdf8;
-  animation: pulseDot 2s infinite ease-in-out;
-}
-
-@keyframes pulseDot {
-  0%, 100% { opacity: 0.55; transform: scale(0.95); }
-  50% { opacity: 1; transform: scale(1.25); }
-}
-
-.angle-dock-title {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: #94a3b8;
-}
-
 .angle-segmented-control {
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.38);
-  padding: 3px;
-  border-radius: 19px;
-  gap: 4px;
+  background: rgba(0, 0, 0, 0.32);
+  padding: 2px;
+  border-radius: 18px;
+  gap: 2px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* เส้นคั่นระหว่างปุ่มรีเซ็ตกับปุ่มมุมมอง */
+.angle-dock-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.18);
+  margin: 0 3px;
+  border-radius: 1px;
 }
 
 .angle-btn {
@@ -494,37 +474,38 @@ body.camera-active .angle-selector {
   background: transparent;
   color: #cbd5e1;
   border: 1px solid transparent;
-  border-radius: 15px;
-  padding: 5px 14px 4px;
-  min-width: 56px;
+  border-radius: 14px;
+  padding: 3px 8px 3px;
+  min-width: 44px;
   cursor: pointer;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   position: relative;
 }
 
 .angle-btn-icon {
-  font-size: 15px;
-  line-height: 1.15;
-  margin-bottom: 2px;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 13px;
+  line-height: 1.1;
+  margin-bottom: 1px;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .angle-btn-text {
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.2px;
-  line-height: 1.2;
+  letter-spacing: 0.15px;
+  line-height: 1.15;
 }
 
 .angle-btn-deg {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
   color: #64748b;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
+  line-height: 1;
   margin-top: 1px;
-  transition: color 0.25s ease;
+  transition: color 0.22s ease;
 }
 
 .angle-btn:hover {
@@ -533,7 +514,7 @@ body.camera-active .angle-selector {
 }
 
 .angle-btn:hover .angle-btn-icon {
-  transform: translateY(-1.5px);
+  transform: translateY(-1px);
 }
 
 .angle-btn:hover .angle-btn-deg {
@@ -541,19 +522,20 @@ body.camera-active .angle-selector {
 }
 
 .angle-btn:active {
-  transform: scale(0.94);
+  transform: scale(0.93);
 }
 
+/* สถานะ Active เมื่อเลือกมุมมองนั้นๆ */
 .angle-btn.is-active {
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: #ffffff;
-  border-color: rgba(56, 189, 248, 0.55);
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.25) inset;
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.25) inset;
   transform: scale(1.02);
 }
 
 .angle-btn.is-active .angle-btn-icon {
-  transform: scale(1.12);
+  transform: scale(1.1);
 }
 
 .angle-btn.is-active .angle-btn-text {
@@ -566,36 +548,45 @@ body.camera-active .angle-selector {
   font-weight: 700;
 }
 
+/* ดีไซน์เฉพาะสำหรับปุ่มรีเซ็ตที่อยู่ใน dock */
+.angle-btn.reset-btn-dock {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.angle-btn.reset-btn-dock:hover {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.angle-btn.reset-btn-dock.is-active {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  border-color: rgba(248, 113, 113, 0.75) !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.6) !important;
+  color: #ffffff !important;
+}
+
+.angle-btn.reset-btn-dock.is-active .angle-btn-deg {
+  color: #fecaca !important;
+}
+
 /* วางตำแหน่ง Toast ลอยอยู่เหนือแผงมุมมองพอดี สไตล์ HUD Tooltip ในโหมดกล้อง */
 body.camera-active .ar-toast {
-  bottom: max(172px, env(safe-area-inset-bottom) + 158px) !important;
+  bottom: max(68px, env(safe-area-inset-bottom) + 56px) !important;
   top: auto !important;
   z-index: 400;
   background: rgba(15, 23, 42, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-  font-size: 12.5px;
-  padding: 8px 18px;
-  border-radius: 20px;
+  font-size: 12px;
+  padding: 7px 16px;
+  border-radius: 18px;
 }
 
-/* ข้อความแนะนำบนหน้าจอกล้อง ด้านล่างตรงกลาง */
+/* ซ่อนข้อความ hint ในโหมดกล้อง เพื่อไม่ให้บังสินค้าและเปิดพื้นที่ให้ปุ่มมุมมองอยู่ล่างสุด */
 body.camera-active .camera-hint {
-  display: block !important;
-  position: absolute;
-  bottom: max(30px, env(safe-area-inset-bottom) + 15px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.65);
-  color: #fff;
-  padding: 7px 18px;
-  border-radius: 20px;
-  font-size: clamp(11px, 2.5vw, 13px);
-  white-space: nowrap;
-  pointer-events: none;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: none !important;
 }
 
 /* แถบปุ่มฟังก์ชัน ด้านซ้ายบนบนหน้าจอกล้อง เรียงเป็นแถวเดียวลงมา */
@@ -902,11 +893,13 @@ body.camera-active .ar-toast {
   }
 
   /* ในโหมดกล้องแนวนอน */
-  body.camera-active .camera-hint {
-    bottom: max(14px, env(safe-area-inset-bottom));
-    top: auto;
-    font-size: 11px;
-    padding: 4px 12px;
+  body.camera-active .angle-selector {
+    bottom: max(6px, env(safe-area-inset-bottom) + 2px);
+    padding: 2px 4px;
+  }
+
+  body.camera-active .ar-toast {
+    bottom: max(52px, env(safe-area-inset-bottom) + 42px) !important;
   }
 
   body.camera-active .close-camera-btn {

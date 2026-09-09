@@ -277,7 +277,7 @@ function resetAll() {
   }
 
   // รีเซ็ตไฮไลท์ปุ่มมุมมองกลับมาที่ 'front'
-  document.querySelectorAll('.angle-btn').forEach((btn) => {
+  document.querySelectorAll('.angle-btn[data-angle]').forEach((btn) => {
     btn.classList.toggle('is-active', btn.dataset.angle === 'front');
   });
 
@@ -331,7 +331,7 @@ function setProductAngle(angleName) {
   viewer.cameraOrbit = orbit;
 
   // 4. อัปเดตไฮไลท์ปุ่มมุมมองทั้งหมด
-  document.querySelectorAll('.angle-btn').forEach((btn) => {
+  document.querySelectorAll('.angle-btn[data-angle]').forEach((btn) => {
     if (btn.dataset.angle === angleName) {
       btn.classList.add('is-active');
     } else {
