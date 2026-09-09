@@ -143,6 +143,7 @@ model-viewer {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 12px;
   margin-top: 15px;
   width: 100%;
 }

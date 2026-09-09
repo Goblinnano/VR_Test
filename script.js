@@ -367,7 +367,7 @@ async function launchTrueAR() {
   if (cameraStream) {
     stopWebCamera();
   }
-  showToast('กำลังเปิดระบบสแกนพื้นผิวโต๊ะจริง (True AR)... 🌟');
+  showToast('กำลังเปิดระบบกล้อง VR... 🌟');
   try {
     if (viewer && typeof viewer.activateAR === 'function') {
       await viewer.activateAR();
